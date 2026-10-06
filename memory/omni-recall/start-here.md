@@ -1,6 +1,6 @@
 ---
 version: 1.8.3
-last_audited: 2026-08-23
+last_audited: 2026-09-29
 status: verified
 ---
 
@@ -32,16 +32,27 @@ The system should:
 
 ## Last Verified Session
 
-- Audit date: 2026-08-23
-- HEAD: `aa4ff77d` (release(v1.8.3): Multi-Droplet Agent Pipelines, Sentinel Edge Pre-Warming, SonarCloud clean-code certification, and CI/CD pipeline closure)
-- Branch: `main` (PR #10 merged into `main`, pushed to `origin/main`, release tagged `v1.8.3`)
-- Package: `1.8.3` (root); app `1.3.10`
+- Audit date: 2026-09-29
+- HEAD: `6c62fdb8` (merge of PR #25, AUD-1b; production web deployment `6c62fdb8` succeeded 2026-09-29 14:20 UTC)
+- Branch: `main`; release line `1.8.3` (root), app `1.3.10`; **no release cut since 2026-08-23**
+- Current state: `docs/CURRENT_PLATFORM_STATE_2026_09_29.md`; merged work packages and finding closure: `.understand-anything/CANONICAL_STATE_2026-09-29.md`
 - Key facts:
-  1. **Multi-Droplet Agent Pipelines**: OmniSlate supports attaching 2 or more ecosystem apps with interactive visual chaining (`⚡ Multi-Agent Pipeline Active: DueRadar ➔ Google Antigravity`) and multi-stage MCP synthesis plans.
-  2. **Sentinel Edge Pre-Warming**: Background 5-minute heartbeat keeps Edge Functions and containers hot (`Edge Engine Warm · 5m cycle`).
-  3. **Zero Code Inspection Issues**: 100% resolved SonarCloud/ESLint inspection items across `ProviderLogo.tsx`, `SentinelPanel.tsx`, `SystemHealthRow.tsx`, `OmniDashShell.tsx`, `index.html`, and `landing.html`.
-  4. **Certified onAction Capabilities**: Central capability contract `moduleActionCapabilities.ts` wires live Stripe Customer Portal, Supabase Storage, and Edge Function pipelines with full truth alignment.
-  5. **CI/CD Pipeline Integrity**: 100% green across all 10 GitHub Actions workflows (`Release Validation`, `Deploy to Staging`, `CI Runtime Gates`, `apex-governance`, `compliance`, `Security Regression Guard`, `A.R.I.S.E.`, `Lighthouse CI`, `integration-harness`, `Secret Scanning`).
+  1. **Merged is not live.** Web builds go live on merge (Cloudflare Pages, automatic production deployments on `main`). Database migrations are applied by the owner in order (production applied through `20260928000000`; four 2026-09-28 migrations pending). Production edge functions deploy only from CI on `main` through manual, reviewer-gated workflows (`production-db` environment).
+  2. **Revenue contract APEX-REV-2026-09** (`docs/contracts/REVENUE_EXECUTION_CONTRACT.md`): WP-00, WP-01→03, WP-05, WP-05b and WP-09 are merged; WP-04, WP-06, WP-07, WP-08 and WP-10 are not (owner decisions or unmerged). Change log: `docs/APEX_AGENT_OPERATIONS.md` §9.41 onward.
+  3. **PhysiOmni:** `physiomni-ingest` is the canonical endpoint (fail-closed, not deployed, 0 devices); `physiomni-ingress` is retired and deleted from production and the repo.
+  4. **Orchestrator:** code maintained here; hosted service suspended; hosting decision open (`rfc/RFC_2026_09_28_ORCHESTRATOR_HOSTING.md`).
+  5. **Documentation integrity:** `docs/APEX_AGENT_OPERATIONS.md` had 228 mojibake lines and lost-letter control characters, now repaired; see `wiki/corrections/007-...`.
+
+## Session 2026-09-28/29 — Revenue contract execution and documentation sync
+
+- **Owner-issued standing rules (durable):**
+  - Deploy-trigger rule: no PR containing a merge-triggered deploy workflow is merged until the owner confirms the secrets it needs are set. Deploy workflows are `workflow_dispatch` only, in the `production-db` environment, from `main` only, and never run migrations.
+  - Migrations: the owner applies only what is on `main`, manually, in order; before the tier backfill, run its count query and report the number.
+  - One PR open at a time from the designated branch; before any "ready to merge" call, re-check the PR against every decision issued since it was opened.
+  - Web-build go-live is automatic on merge to `main`; assume every merge goes live at once.
+- **Corrections recorded:** an early recommendation to merge #21 contradicted decisions issued after it was opened (it hardened a retired endpoint and added a third auth scheme); retracted and reworked. A claim that the web build only goes live on a release routing flip was contradicted by Cloudflare project settings and retracted. See `docs/APEX_AGENT_OPERATIONS.md` §9.51–§9.52.
+- **Documentation sync (this file's session):** README, snapshot, canonical state, index and entry points updated; scan artifacts regenerated with `.understand-anything/tmp/ua-project-scan.mjs` and `ua-build-graph.mjs`. `last_audited` stamps on the ~330 other living docs were deliberately not bumped (not individually re-audited).
+- **Open (owner):** production-db environment and secrets, migration application, function deploys, WP-04/WP-07 decisions, claims register O1–O8, `config.toml` `verify_jwt` drift for `stripe-webhook`, `byom-login` and `omnilink-retry-scheduler` (see the ops-log entry of the documentation-sync PR).
 
 ## Session 2026-08-23 (v1.8.3 Release & Multi-Droplet Pipelines)
 

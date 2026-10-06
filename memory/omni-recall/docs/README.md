@@ -1,12 +1,12 @@
 > CI validates release readiness. Production certification is manual and owner-approved only.
 
 ---
-version: 1.3.4
-last_audited: 2026-07-16
+version: 1.4.0
+last_audited: 2026-09-29
 status: verified
 ---
 
-<!-- APEX_DOC_STAMP: VERSION=v9.9-DOC-RELEASE-INDEX | LAST_UPDATED=2026-07-16 -->
+<!-- APEX_DOC_STAMP: VERSION=v9.9-DOC-RELEASE-INDEX | LAST_UPDATED=2026-09-29 -->
 
 > CI validates release readiness. Production certification is manual and owner-approved only.
 
@@ -14,12 +14,12 @@ status: verified
 
 **Enterprise AI Orchestration Platform**
 
-- **Document Version:** 2.10.4
+- **Document Version:** 2.11.0
 - **Platform Version:** 1.8.3
-- **Last Updated:** 2026-07-16
+- **Last Updated:** 2026-09-29
 - **Current Documentation Index:** [Documentation Release Index](DOCUMENTATION_RELEASE_INDEX.md)
 - **Current Certification Boundary:** [`docs/release/release-validation-matrix.json`](../../../docs/release/release-validation-matrix.json) records repo-verified remediations; items labeled `BLOCKED` / `REQUIRES_MANUAL_VALIDATION` still require owner/live evidence. CI is validation evidence only ([CI Status Policy](project-status/CI_STATUS_POLICY.md)).
-- **Current Platform Snapshot:** [Current Platform State — 2026-07-16](CURRENT_PLATFORM_STATE_2026_07_16.md) (release remediation gates, local-launch truthfulness, fail-closed release envs; live production checks not re-verified by the doc sync)
+- **Current Platform Snapshot:** [Current Platform State — 2026-09-29](CURRENT_PLATFORM_STATE_2026_09_29.md) (head `6c62fdb8`, git-verified counts, read-only production state, open owner items; supersedes the 2026-07-16 snapshot). Merged work packages and finding closure: [`.understand-anything/CANONICAL_STATE_2026-09-29.md`](../../../.understand-anything/CANONICAL_STATE_2026-09-29.md).
 - **Historical Audit Baseline:** [Third-Party Code Audit 2026-03-09](../archive/docs/audits/THIRD_PARTY_CODE_AUDIT_2026_03_09.md) — Score: **94.3/100 (A)**
 
 

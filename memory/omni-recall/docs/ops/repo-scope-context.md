@@ -69,28 +69,44 @@ Primary package scripts indicate a polyglot operational model:
 
 ## CI/CD Workflow Inventory
 
-Current workflow files discovered:
+Workflow files in `.github/workflows/` (refreshed 2026-09-29, 23 files; `production-readiness.yml` is retired):
 
-- `ci-runtime-gates.yml`
+- `alert-guard-rail-violation.yml`
+- `apex-governance.yml`
+- `arise-propose.yml`
+- `arise.yml`
 - `cd-staging.yml`
-- `deploy-web3-functions.yml`
 - `chaos-simulation-ci.yml`
+- `ci-runtime-gates.yml`
+- `compliance.yml`
+- `dependency-consolidation.yml`
+- `deploy-mcp-gateway.yml`
+- `deploy-omnihub-proof.yml`
+- `deploy-production-cf-direct.yml`
+- `deploy-web3-functions.yml`
+- `integration.yml`
+- `lighthouse.yml`
+- `mobile-build-verify.yml`
 - `nightly-evaluation.yml`
+- `ops-doc-guard.yml`
 - `orchestrator-ci.yml`
-- `production-readiness.yml`
+- `release.yml`
+- `rsi-governance.yml`
 - `secret-scanning.yml`
 - `security-regression-guard.yml`
 
+Deploy workflows (`deploy-web3-functions.yml`, `deploy-mcp-gateway.yml`) are `workflow_dispatch` only, run in the `production-db` environment and never run migrations; see `docs/APEX_AGENT_OPERATIONS.md` section 5.
+
 ## Codebase Composition Snapshot (Tracked Files)
 
-Based on `git ls-files` extension distribution:
+Based on `git ls-files` extension distribution (refreshed 2026-09-29; the 2026-05-06 figures were 309 `.ts`, 180 `.tsx`, 268 `.md`, 75 `.py`, 40 `.sql`, 1198 total):
 
-- TypeScript (`.ts`): 309
-- React TSX (`.tsx`): 180
-- Markdown docs (`.md`): 268
-- Python (`.py`): 75
-- SQL migrations (`.sql`): 40
-- Total tracked files: 1198
+- TypeScript (`.ts`): 882
+- React TSX (`.tsx`): 372
+- Markdown docs (`.md`): 646
+- Python (`.py`): 174
+- SQL (`.sql`, forward and rollback): 128
+- Total tracked files: 2878
 
 Interpretation: this is documentation-heavy with substantial TypeScript frontend/backend glue and a meaningful Python orchestration subsystem.
 

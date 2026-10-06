@@ -30,9 +30,6 @@ enabled = false  # Enable when Solana support is needed
 [functions.storage-upload-url]
 verify_jwt = true
 
-[functions.supabase_healthcheck]
-verify_jwt = false
-
 [functions.execute-automation]
 verify_jwt = true
 
@@ -55,13 +52,8 @@ verify_jwt = true
 [functions.apex-voice]
 verify_jwt = false
 
-[functions.lovable-device]
-verify_jwt = false
-
-[functions.lovable-audit]
-verify_jwt = false
-
-[functions.lovable-healthcheck]
+[functions.notify-access-request]
+# Own auth: X-Cron-Secret (vault cron_shared_secret) from the access_requests trigger.
 verify_jwt = false
 
 # Web3 Authentication Functions
@@ -82,10 +74,6 @@ verify_jwt = false  # Webhook endpoint from Alchemy (uses signature verification
 [functions.byom-cockpit]
 verify_jwt = true  # All BYOM credential operations require authenticated user
 
-# PhysiOmni — Physical-Edge Sensor Ingress (Phase 1 Pilot)
-# Version: 1.0.0 | Date: 2026-05-26
-[functions.physiomni-ingress]
-verify_jwt = false  # Device auth via mTLS at transport layer; service_role used internally
 # Environment Variables for Edge Functions
 # These blockchain-related secrets must be set in production environment:
 # - WEB3_PRIVATE_KEY: OmniLink EVM private key for transaction signing

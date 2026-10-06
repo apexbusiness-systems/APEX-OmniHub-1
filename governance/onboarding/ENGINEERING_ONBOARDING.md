@@ -19,7 +19,7 @@ Every engineer must understand:
 ## Required Reading
 
 1. `governance/doctrine/APEX_BUILD_DOCTRINE.md`
-2. `governance/rfc/RFC_USAGE_POLICY.md`
+2. `memory/omni-recall/rfc/RFC_USAGE_POLICY.md`
 3. `governance/architecture/ARCHITECTURE_REVIEW_GATES.md`
 4. `governance/architecture/MERGE_RIGHTS_POLICY.md`
 5. `governance/ci/CI_POLICY_GATES.md`

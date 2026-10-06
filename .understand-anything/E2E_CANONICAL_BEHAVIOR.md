@@ -82,5 +82,6 @@ When mocking core modules in Vitest (e.g., `vi.mock('@/contracts/omnidash-sideba
 - **Chrome Safety Spec:** Viewport layout safety is validated by the Playwright safety spec across 9 viewports, asserting zero horizontal document overflow, zero top-header control collisions, and strict z-index isolation.
 - **PR Non-Duplication:** To avoid git conflicts, all integration and onboarder work belongs solely to PR #1641; tech debt audits are cataloged in PR #1642 without modifying locked files.
 
-
-
+## 17. Merged Is Not Live (Deploy Provenance and Go-Live Model, 2026-09-29)
+**Invariant:** A merge to `main` changes what users see only for the web build. Database state and edge functions change only when the owner acts, and every claim about production must say which of the two it is.
+**Rule:** The Cloudflare Pages project builds from `main` with automatic production deployments, so assume every merge goes live at once. Migrations are applied by the owner, by hand, in order, and only those already on `main`; no workflow runs them. Production edge functions deploy only from CI on `main` through `workflow_dispatch` workflows in the `production-db` environment (required reviewer); `tests/infrastructure/deploy-workflow-gates.test.ts` fails the build if a workflow that uses the Supabase deploy secrets gains an automatic trigger. Before saying a fix is live, check the deployed function's `updated_at` (Supabase Management API) and the applied migration list; label anything not checked `VERIFIED-IN-CODE` or `REQUIRES_LIVE_VALIDATION`. See `docs/APEX_AGENT_OPERATIONS.md` sections 5 and 9.52.

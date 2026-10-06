@@ -101,7 +101,7 @@ The ES256 assertion signature verification gap is closed:
 
 ## Owner Actions Remaining
 1. Review + merge branch `claude/modest-maxwell-oqflsj` (PR #1456); deploy site (Cloudflare).
-2. Apply migration: `supabase db push --include-all` against production project.
+2. Apply migration: `supabase db push --include-all` against production project. _(Historical instruction from the PR #1456 release. Superseded by the 2026-09-29 owner rules: do not use `--include-all`; the owner applies only migrations that are on `main`, manually and in order.)_
 3. Deploy edge function: `supabase functions deploy identity-webauthn --project-ref rtopreovkywofgwgmozi`.
 4. Validate WebAuthn on a real device (FaceID/TouchID); certify `identity.webauthn` and `identity.faceid` if green.
 5. Eyes: run client→`byom-proxy`→vision E2E with a live BYOM key; certify `senses.eyes` if green.

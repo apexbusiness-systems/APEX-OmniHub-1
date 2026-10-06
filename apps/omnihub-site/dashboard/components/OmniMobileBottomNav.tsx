@@ -82,6 +82,7 @@ export function OmniMobileBottomNav({ activeTab, onSelect }: OmniMobileBottomNav
         return (
           <button
             key={tabId}
+            data-testid={`omni-mobile-tab-${tabId}`}
             role="tab"
             aria-selected={isActive}
             aria-label={label}

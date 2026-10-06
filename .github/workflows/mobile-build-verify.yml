@@ -136,6 +136,9 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@00854ea68c109d98c75d956347303bf7c45b0277 # v3.2.1
+        with:
+          # Default set includes the legacy 'tools' package, which the SDK repo no longer serves.
+          packages: 'platform-tools'
 
       - name: Setup Bun
 

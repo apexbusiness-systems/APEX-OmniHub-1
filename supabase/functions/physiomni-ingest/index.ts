@@ -9,6 +9,11 @@ import {
 // In a real env, this would be a shared import.
 import { z } from 'https://deno.land/x/zod@v3.21.4/mod.ts';
 
+const MAX_BODY_BYTES = 4096;
+const REPLAY_WINDOW_MS = 30_000;
+/** Limit for callers that have not authenticated yet (keyed by client IP). */
+const IP_RATE_LIMIT = { maxRequests: 600, windowMs: 60_000, keyPrefix: 'physiomni-ingest-ip' };
+
 const PhysiOmniTelemetrySchema = z.object({
   device_id: z.string().min(1),
   tenant_id: z.string().min(1),
@@ -23,6 +28,21 @@ const PhysiOmniTelemetrySchema = z.object({
   }),
 });
 
+function json(body: unknown, status: number, corsHeaders: Record<string, string>): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
+function clientIp(req: Request): string {
+  return (
+    req.headers.get('cf-connecting-ip')?.trim() ||
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    'unknown'
+  );
+}
+
 serve(async (req) => {
   const corsHeaders = buildCorsHeaders(req.headers.get('Origin') ?? '');
   if (req.method === 'OPTIONS') {
@@ -32,86 +52,92 @@ serve(async (req) => {
   try {
     const isLiveEnabled = Deno.env.get('PHYSIOMNI_LIVE_ENABLED') === 'true';
     if (!isLiveEnabled) {
-      return new Response(JSON.stringify({ error: 'PhysiOmni is not running in live mode' }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return json({ error: 'PhysiOmni is not running in live mode' }, 403, corsHeaders);
     }
 
-    const payload = await req.json();
+    // Unauthenticated callers are limited per client IP (fails closed).
+    const ipLimit = await checkRateLimit(`ip:${clientIp(req)}`, IP_RATE_LIMIT);
+    if (!ipLimit.allowed) {
+      return rateLimitExceededResponse(req.headers.get('Origin') ?? '', ipLimit);
+    }
+
+    if (Number(req.headers.get('content-length') ?? 0) > MAX_BODY_BYTES) {
+      return json({ error: 'Payload too large' }, 413, corsHeaders);
+    }
+    const rawBody = await req.text();
+    if (rawBody.length > MAX_BODY_BYTES) {
+      return json({ error: 'Payload too large' }, 413, corsHeaders);
+    }
+    let payload: unknown;
+    try {
+      payload = JSON.parse(rawBody);
+    } catch {
+      return json({ error: 'Invalid JSON' }, 400, corsHeaders);
+    }
     const parsed = PhysiOmniTelemetrySchema.safeParse(payload);
 
     if (!parsed.success) {
-      return new Response(JSON.stringify({ error: 'Invalid telemetry schema', details: parsed.error }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return json({ error: 'Invalid telemetry schema', details: parsed.error }, 400, corsHeaders);
     }
 
     const { device_id, tenant_id, timestamp, signature } = parsed.data;
 
-    // Distributed rate limiting — no authenticated user on telemetry ingress; key by tenant
-    const rl = await checkRateLimit(tenant_id, RATE_LIMIT_CONFIGS.physiomniIngest);
+    // Reject stale or future-dated telemetry (replay defense)
+    const telemetryTime = new Date(timestamp).getTime();
+    if (Math.abs(Date.now() - telemetryTime) > REPLAY_WINDOW_MS) {
+      return json({ error: 'Telemetry timestamp outside the allowed window' }, 403, corsHeaders);
+    }
+
+    // Verify HMAC-SHA256 signature. Required: fails closed when no key is configured.
+    const hmacSecret = Deno.env.get('PHYSIOMNI_INGRESS_HMAC_SECRET');
+    if (!hmacSecret) {
+      console.error('[physiomni-ingest] PHYSIOMNI_INGRESS_HMAC_SECRET is not configured');
+      return json({ error: 'Telemetry signing is not configured' }, 503, corsHeaders);
+    }
+    const encoder = new TextEncoder();
+    const keyMaterial = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(hmacSecret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['verify'],
+    );
+    const message = `${device_id}:${tenant_id}:${timestamp}:${parsed.data.nonce}`;
+    let sigBytes: Uint8Array;
+    try {
+      sigBytes = Uint8Array.from(
+        signature.match(/.{1,2}/g)!.map((b) => parseInt(b, 16)),
+      );
+    } catch {
+      return json({ error: 'Malformed signature encoding' }, 403, corsHeaders);
+    }
+    const valid = await crypto.subtle.verify('HMAC', keyMaterial, sigBytes, encoder.encode(message));
+    if (!valid) {
+      return json({ error: 'Signature verification failed' }, 403, corsHeaders);
+    }
+
+    // The (tenant_id, device_serial) pair must be a registered, active device.
+    const supabase = createServiceClient();
+    const { data: deviceData, error: deviceError } = await supabase
+      .from('physiomni_devices')
+      .select('id')
+      .eq('tenant_id', tenant_id)
+      .eq('device_serial', device_id)
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (deviceError) {
+      console.error('[physiomni-ingest] device lookup failed:', deviceError.message);
+      return json({ error: 'Unable to verify device' }, 503, corsHeaders);
+    }
+    if (!deviceData) {
+      return json({ error: 'Device not authorized for this tenant' }, 403, corsHeaders);
+    }
+
+    // Per-device limit, keyed on the verified registered identity.
+    const rl = await checkRateLimit(`${tenant_id}:${device_id}`, RATE_LIMIT_CONFIGS.physiomniIngest);
     if (!rl.allowed) {
       return rateLimitExceededResponse(req.headers.get('Origin') ?? '', rl);
-    }
-
-    // Reject stale telemetry (older than 30s)
-    const telemetryTime = new Date(timestamp).getTime();
-    if (Date.now() - telemetryTime > 30000) {
-      return new Response(JSON.stringify({ error: 'Telemetry payload too old (replay defense)' }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const supabase = createServiceClient();
-    
-    // Check if device is bound to this tenant and get secret for signature verify
-    const { data: deviceData, error: deviceError } = await supabase
-      .from('omnilink_api_keys') // Or dedicated devices table
-      .select('id, tenant_id')
-      .eq('integration_id', device_id)
-      .eq('tenant_id', tenant_id)
-      .single();
-
-    if (deviceError || !deviceData) {
-       return new Response(JSON.stringify({ error: 'Device not authorized for this tenant' }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Verify HMAC-SHA256 signature using device's shared secret
-    const hmacSecret = Deno.env.get('PHYSIOMNI_DEVICE_HMAC_SECRET');
-    if (hmacSecret) {
-      const encoder = new TextEncoder();
-      const keyMaterial = await crypto.subtle.importKey(
-        'raw',
-        encoder.encode(hmacSecret),
-        { name: 'HMAC', hash: 'SHA-256' },
-        false,
-        ['verify'],
-      );
-      const message = `${device_id}:${tenant_id}:${timestamp}:${parsed.data.nonce}`;
-      let sigBytes: Uint8Array;
-      try {
-        sigBytes = Uint8Array.from(
-          signature.match(/.{1,2}/g)!.map((b) => parseInt(b, 16)),
-        );
-      } catch {
-        return new Response(JSON.stringify({ error: 'Malformed signature encoding' }), {
-          status: 403,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      const valid = await crypto.subtle.verify('HMAC', keyMaterial, sigBytes, encoder.encode(message));
-      if (!valid) {
-        return new Response(JSON.stringify({ error: 'Signature verification failed' }), {
-          status: 403,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
     }
 
     // Persist telemetry — idempotent via UNIQUE(device_serial, captured_at)
@@ -133,10 +159,7 @@ serve(async (req) => {
 
     if (insertError) {
       console.error('[physiomni-ingest] DB insert error:', insertError.message);
-      return new Response(JSON.stringify({ error: 'Telemetry persistence failed' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return json({ error: 'Telemetry persistence failed' }, 500, corsHeaders);
     }
 
     // Update device last_seen_at
@@ -146,14 +169,13 @@ serve(async (req) => {
       .eq('device_serial', device_id)
       .eq('tenant_id', tenant_id);
 
-    return new Response(
-      JSON.stringify({ success: true, message: 'Telemetry ingested successfully', timestamp: new Date().toISOString() }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 },
+    return json(
+      { success: true, message: 'Telemetry ingested successfully', timestamp: new Date().toISOString() },
+      200,
+      corsHeaders,
     );
   } catch (err: unknown) {
-    return new Response(
-      JSON.stringify({ error: 'Internal Server Error', message: (err as Error).message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-    );
+    console.error('[physiomni-ingest] unhandled error:', err instanceof Error ? err.message : err);
+    return json({ error: 'Internal Server Error' }, 500, corsHeaders);
   }
 });

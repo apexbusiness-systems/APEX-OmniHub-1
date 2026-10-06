@@ -93,15 +93,6 @@ export const dbTools: MCPTool[] = [
       required: ["table", "records"],
     },
   },
-  {
-    name: "db_execute_sql",
-    description: "Execute a raw read-only SQL statement (SELECT only).",
-    inputSchema: {
-      type: "object",
-      properties: { sql: { type: "string", description: "SELECT statement" } },
-      required: ["sql"],
-    },
-  },
 ];
 
 export async function handleDbTool(
@@ -184,16 +175,6 @@ export async function handleDbTool(
           onConflict: (args.onConflict as string | undefined) ?? "id",
         })
         .select();
-      if (error) return err(error.message);
-      return ok(data);
-    }
-
-    if (name === "db_execute_sql") {
-      const sql = (args.sql as string).trim();
-      if (!/^select\s/i.test(sql)) {
-        return err("Only SELECT statements are allowed in db_execute_sql.");
-      }
-      const { data, error } = await sb.rpc("execute_sql" as never, { sql } as never);
       if (error) return err(error.message);
       return ok(data);
     }

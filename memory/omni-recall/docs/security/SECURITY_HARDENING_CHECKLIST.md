@@ -9,6 +9,8 @@ status: verified
 
 # Security Hardening Checklist
 
+> **Current-state note (2026-09-29):** these `npm run` names in this document are not defined in any `package.json` in the repository and should be treated as planned or historical, not runnable: `test:security`. The runnable scripts are in the root `package.json`.
+
 ## Executive Summary
 APEX OmniHub implements defense-in-depth security with zero-trust architecture, achieving enterprise-grade protection against OWASP Top 10 vulnerabilities.
 

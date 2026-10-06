@@ -121,7 +121,7 @@ sequenceDiagram
 
 ### Step 1: Database Migration
 
-Run the migration to create required tables:
+Run the migration to create required tables. **Production:** the owner applies migrations by hand, in order, and only those already on `main` (no workflow runs migrations). The commands below are for a development project.
 
 ```bash
 # Using Supabase CLI
@@ -173,15 +173,13 @@ VITE_WALLETCONNECT_PROJECT_ID=your-walletconnect-project-id
 
 ### Step 3: Deploy Edge Functions
 
-**CI/CD Pipeline (Recommended):**
-The repository uses `.github/workflows/deploy-web3-functions.yml` for automated deployment.
-The pipeline follows a strict sequence:
-1. **Link**: Connect to Supabase project
-2. **Migrate**: Apply schema changes (`supabase db push`)
-3. **Deploy**: Update Edge Functions
-4. **Verify**: Run smoke tests with retry logic (3 attempts)
+**CI/CD Pipeline (the only production path):**
+Production edge functions deploy only from CI on `main`. `.github/workflows/deploy-web3-functions.yml` is `workflow_dispatch` only, runs in the `production-db` environment (required reviewer) and deploys functions only; it never runs migrations. The sequence is:
+1. **Link**: Connect to the Supabase project (needs `SUPABASE_ACCESS_TOKEN` and `SUPABASE_PROJECT_REF`)
+2. **Deploy**: Update the Edge Functions
+3. **Verify**: Run smoke tests with retry logic (3 attempts)
 
-**Manual Deployment:**
+**Manual Deployment (development projects only, never production):**
 ```bash
 # Deploy web3-nonce function
 supabase functions deploy web3-nonce

@@ -39,8 +39,11 @@ const safeUrl = (value: string) => {
 async function visibleSignal(page: Page) {
   const selectors = ['h1', 'h2', '[role="heading"]', 'main', 'body'];
   for (const selector of selectors) {
-    const text = (await page.locator(selector).first().textContent().catch(() => ''))?.trim();
-    if (text) return redact(text.replace(/\s+/g, ' ').slice(0, 240));
+    const loc = page.locator(selector).first();
+    if ((await loc.count()) > 0) {
+      const text = (await loc.textContent({ timeout: 1_000 }).catch(() => ''))?.trim();
+      if (text) return redact(text.replace(/\s+/g, ' ').slice(0, 240));
+    }
   }
   return '';
 }
@@ -59,7 +62,7 @@ function classify(input: {
   const fatalText = /stack trace|uncaught|failed to fetch|application error|something went wrong|cannot read properties/i;
   if (!input.status || input.status >= 500 || fatalText.test(combined) || input.pageErrors.length > 0) return 'FAILED';
   if (input.route === '/omnidash') {
-    if (finalUrl.includes('/login') || /sign in|log in|login|request access|protected|authenticated/.test(combined)) return 'AUTH_GATE_VERIFIED';
+    if (finalUrl.includes('/login') || finalUrl.includes('/auth') || /sign in|log in|login|welcome back|request access|protected|authenticated/.test(combined)) return 'AUTH_GATE_VERIFIED';
     return 'HONESTLY_GATED';
   }
   if (input.route === '/request-access') return input.signal ? 'WORKFLOW_VERIFIED' : 'FAILED';

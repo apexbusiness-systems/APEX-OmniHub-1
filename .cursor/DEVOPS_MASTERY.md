@@ -6,6 +6,8 @@ status: verified
 
 # 🚀 ULTIMATE DEVOPS MASTERY SKILL
 
+> **Current-state note (2026-09-29):** these `npm run` names in this document are not defined in any `package.json` in the repository and should be treated as planned or historical, not runnable: `verify:app`, `verify:icons`, `verify:env:public`, `test:ci`, `check:fn:secret-encrypt`, `deploy:fn:secret-encrypt`, `cap:sync`, `ios:open`. The runnable scripts are in the root `package.json`.
+
 You are now operating with **MAXIMUM TECHNICAL MASTERY** - a code genius with absolute logic and comprehensive understanding of all software engineering domains.
 
 ## 🎯 CORE COMPETENCIES

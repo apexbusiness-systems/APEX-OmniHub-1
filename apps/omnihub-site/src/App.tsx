@@ -3,7 +3,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { I18nextProvider } from 'react-i18next';
 import { Toaster } from 'sonner';
 import i18n from './i18n';
-import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 // APEX PWA INVARIANT: PWAInstallBanner MUST remain in App.tsx.
 // Removal silently breaks the live-site install prompt. Guarded by: scripts/ci/check-pwa-integrity.mjs
 import { PWAInstallBanner } from "@/components/PWAInstallBanner";
@@ -47,6 +47,7 @@ import OmniDash from "@/pages/product/OmniDash";
 import { PhysiOmniPilotPage } from "@/pages/PhysiOmniPilot";
 import { PricingPage } from "@/pages/Pricing";
 import { ManifestoPage } from "@/pages/Manifesto";
+import { NotFoundPage } from "@/pages/NotFound";
 
 type AppRoute = {
   readonly path: string;
@@ -127,8 +128,8 @@ const preAuthRoutes: readonly AppRoute[] = [
   { path: "/omniport.html", element: <OmniPortPage />, isPublic: true, routeName: "OmniPort" },
   { path: "/orchestrator", element: <OrchestratorPage />, isPublic: true, routeName: "Orchestrator" },
   { path: "/orchestrator.html", element: <OrchestratorPage />, isPublic: true, routeName: "Orchestrator" },
-  { path: "/omniboard", element: <OmniBoardPage />, isPublic: true, routeName: "OmniBoard" },
-  { path: "/omniboard.html", element: <OmniBoardPage />, isPublic: true, routeName: "OmniBoard" },
+  { path: "/omniboard", element: <OmniBoardPage />, isPublic: false, routeName: "OmniBoard" },
+  { path: "/omniboard.html", element: <OmniBoardPage />, isPublic: false, routeName: "OmniBoard" },
   { path: "/product/omniskills", element: <OmniSkillsPage />, isPublic: true, routeName: "OmniSkills" },
   { path: "/product/omniskills.html", element: <OmniSkillsPage />, isPublic: true, routeName: "OmniSkills" },
   { path: "/product/byom", element: <BYOMPage />, isPublic: true, routeName: "BYOM" },
@@ -150,6 +151,8 @@ const preAuthRoutes: readonly AppRoute[] = [
   { path: "/manifesto.html",      element: <ManifestoPage />, isPublic: true, routeName: "Manifesto" },
   { path: "/apex-manifesto",      element: <ManifestoPage />, isPublic: true, routeName: "Manifesto" },
   { path: "/apex-manifesto.html", element: <ManifestoPage />, isPublic: true, routeName: "Manifesto" },
+  { path: "/404",                 element: <NotFoundPage />,  isPublic: true, routeName: "NotFound" },
+  { path: "/404.html",            element: <NotFoundPage />,  isPublic: true, routeName: "NotFound" },
 ];
 
 function App() {
@@ -183,8 +186,8 @@ function App() {
               edge function with the user JWT, so it requires an authenticated session. */}
           <Route path="/launch/skillforge" element={createProtectedElement(<SkillForge />, false, "OmniSkills")} />
 
-        {/* All unmatched routes → OmniDash (SPA catch-all) */}
-        <Route path="*" element={<Navigate to="/omnidash" replace />} />
+        {/* All unmatched routes → 404 Page Not Found */}
+        <Route path="*" element={<NotFoundPage />} />
         </Routes>
         {/* Lower-right overlay stack containing Brand Anthem Player and Support bubble */}
         <LowerRightStack />

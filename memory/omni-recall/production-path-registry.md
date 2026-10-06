@@ -4,7 +4,7 @@ created: 2026-06-28
 status: active
 workflow: omnidev-apex-pro-v2
 source_of_truth: memory/omni-recall/docs/architecture/CANONICAL_TRUTH.md
-rule: Live app renders from apps/omnihub-site/ (NOT src/). Verify a path with the file tool before editing.
+rule: Production entry is root index.html -> src/main.tsx (root `vite build`), which imports styles and the dashboard from apps/omnihub-site/ through the `@` and `dashboard` aliases in vite.config.ts. Do not assume apps/omnihub-site/src/main.tsx is the entry (root CLAUDE.md OSE warning). Verify a path with the file tool before editing.
 ---
 
 # Production Path Registry

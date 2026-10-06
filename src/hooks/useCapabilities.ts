@@ -49,13 +49,13 @@ export function useCapabilities() {
       // Derive capabilities based on role and subscription tier
       return {
         isAdmin,
-        canViewOmniDash: isAdmin || ['pro', 'enterprise'].includes(tier),
-        canManageIntegrations: isAdmin || ['starter', 'pro', 'enterprise'].includes(tier),
-        canViewOmniTrace: isAdmin || ['pro', 'enterprise'].includes(tier),
+        canViewOmniDash: isAdmin || ['free', 'starter', 'pro', 'business', 'enterprise'].includes(tier), // Base promise (D1a)
+        canManageIntegrations: isAdmin || ['starter', 'pro', 'business', 'enterprise'].includes(tier),
+        canViewOmniTrace: isAdmin || ['pro', 'business', 'enterprise'].includes(tier),
         canReplayOmniTrace: isAdmin || tier === 'enterprise',
-        canUseTranslation: isAdmin || ['starter', 'pro', 'enterprise'].includes(tier),
-        canUseVoiceAgent: isAdmin || ['pro', 'enterprise'].includes(tier),
-        canViewPolicySummary: isAdmin || ['pro', 'enterprise'].includes(tier),
+        canUseTranslation: isAdmin || ['starter', 'pro', 'business', 'enterprise'].includes(tier),
+        canUseVoiceAgent: isAdmin || ['pro', 'business', 'enterprise'].includes(tier),
+        canViewPolicySummary: isAdmin || ['pro', 'business', 'enterprise'].includes(tier),
         canAccessDiagnostics: isAdmin,
         canBypassMobileGate: isAdmin,
       };

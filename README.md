@@ -1,6 +1,6 @@
 ---
 version: 1.8.3
-last_audited: 2026-08-23
+last_audited: 2026-09-29
 status: verified
 ---
 
@@ -41,7 +41,7 @@ APEX-OmniHub enforces strict **Canonical Surface Ownership** between first-party
 - **OmniSlate Context Droplets**: Integrated app tiles drag and drop or click directly into OmniSlate, rendering 28×28 minimized context pills with brand-specific ambient glow and hover dismissal controls.
 - **Verified Module Capabilities (`moduleActionCapabilities.ts`)**: Explicitly wires and certifies live backend capabilities for `Billing` (Stripe Customer Portal via `create-billing-portal`), `Files` (tenant-scoped Supabase Storage upload/delete), `Workflows` (orchestration dispatch via `execute-workflow`), and `Automations` (rule execution via `execute-automation`).
 
-**Release line:** 1.8.3 | **package.json version:** 1.8.3 | **App package:** 1.3.10 | **Docs audit:** 2026-08-23
+**Release line:** 1.8.3 (no release cut since 2026-08-23) | **package.json version:** 1.8.3 | **App package:** 1.3.10 | **Docs audit:** 2026-09-29 (`main` @ `6c62fdb8`)
 
 [![CI Runtime Gates](https://github.com/aoid-org/APEX-OmniHub/actions/workflows/ci-runtime-gates.yml/badge.svg)](https://github.com/aoid-org/APEX-OmniHub/actions/workflows/ci-runtime-gates.yml)
 [![Orchestrator CI](https://github.com/aoid-org/APEX-OmniHub/actions/workflows/orchestrator-ci.yml/badge.svg)](https://github.com/aoid-org/APEX-OmniHub/actions/workflows/orchestrator-ci.yml)
@@ -50,15 +50,29 @@ APEX-OmniHub enforces strict **Canonical Surface Ownership** between first-party
 
 ---
 
+## Current Status (2026-09-29)
+
+Verified against `main` @ `6c62fdb8`. Full detail: [CURRENT_PLATFORM_STATE_2026_09_29.md](./memory/omni-recall/docs/CURRENT_PLATFORM_STATE_2026_09_29.md) and [CANONICAL_STATE_2026-09-29.md](./.understand-anything/CANONICAL_STATE_2026-09-29.md).
+
+- **Merged since v1.8.3:** the September revenue-contract work — plan-tier provisioning fixes, Stripe subscription lifecycle sync, an entitlement matrix, lead capture with new-lead alerts, removal of client-bundled MCP secrets, PhysiOmni ingest hardening (the `physiomni-ingress` endpoint is retired), a reviewer-gated production deploy workflow, MCP-gateway least privilege, and a server-side audit-log write path. Log: [`docs/APEX_AGENT_OPERATIONS.md`](./docs/APEX_AGENT_OPERATIONS.md) §9.41 onward; contract: [`REVENUE_EXECUTION_CONTRACT.md`](./docs/contracts/REVENUE_EXECUTION_CONTRACT.md).
+- **Merged is not the same as live.** Web builds deploy automatically when `main` changes. Database migrations are applied by the owner, and production edge functions deploy only from CI on `main` through manually dispatched, reviewer-gated workflows. Some September migrations and function changes were merged but not yet applied or deployed at the last check.
+- **Not generally available:** the Business plan's PhysiOmni device telemetry (code present, not deployed, 0 devices). Launch status per plan feature is in the [Entitlement Matrix](./docs/contracts/ENTITLEMENT_MATRIX.md).
+- **Orchestrator:** the Python/Temporal code is in this repository; the hosted service is currently suspended and the revenue path does not depend on it ([hosting memo](./memory/omni-recall/rfc/RFC_2026_09_28_ORCHESTRATOR_HOSTING.md), decision open).
+- **Release evidence:** [`docs/release/release-validation-matrix.json`](./docs/release/release-validation-matrix.json) — 19 of 20 items `VERIFIED`, 1 `HONESTLY_GATED`. CI validates; **releases are cut manually by the owner**, and CI does not decide or certify them.
+
+---
+
 ## 🚦 Start Here (Canonical Map)
 
 **Before touching code, read the canonical architecture map:**
 
-- [CURRENT_PLATFORM_STATE_2026_07_16.md](./memory/omni-recall/docs/CURRENT_PLATFORM_STATE_2026_07_16.md) — current branch/head assessment, recent git history, drift controls, and repo facts
+- [CURRENT_PLATFORM_STATE_2026_09_29.md](./memory/omni-recall/docs/CURRENT_PLATFORM_STATE_2026_09_29.md) — current head, git-verified counts, production state, open owner items
+- [CANONICAL_STATE_2026-09-29.md](./.understand-anything/CANONICAL_STATE_2026-09-29.md) — merged work packages and the finding-closure table
+- [APEX_AGENT_OPERATIONS.md](./docs/APEX_AGENT_OPERATIONS.md) — operations manual and change log (canonical source of truth for deploys and incidents)
 - [DOCUMENTATION_RELEASE_INDEX.md](./memory/omni-recall/docs/DOCUMENTATION_RELEASE_INDEX.md) — current maps, READMEs, status, audits, and runbooks
 - [ARCHITECTURE_CANONICAL_MAP.md](./memory/omni-recall/docs/architecture/ARCHITECTURE_CANONICAL_MAP.md)
 - **[Production Certification Status](./docs/release/release-validation-matrix.json)** (Current Release Evidence Boundary)
-- **[Release Gate Audit 2026-07-01](./docs/audits/release-gate-audit-2026-07-01.md)** — full-build GATE audit at `845fced`: **GATE PASS** (28 gates + 31/31 CI checks on PR #1550)
+- **[Release Gate Audit 2026-07-01](./docs/audits/release-gate-audit-2026-07-01.md)** — historical full-build gate audit at `845fced` (28 gates + 31/31 CI checks on PR #1550); not a statement about the current head
 - [CI Status Policy](./memory/omni-recall/docs/project-status/CI_STATUS_POLICY.md)
 - **[OmniDash Canonical Layout Law + P2+ Enhancements (PR #1516)](./memory/omni-recall/omnidash-p2plus-enhancements-2026-06-29.md)** — locked OmniDash layout, mobile/tablet one-handed UX (flick-to-set, header de-clip), and OmniMedia images + Files pipeline + server-side upload caps. Enforced by `npm run check:omnidash`.
 
@@ -78,21 +92,21 @@ The platform relies on a "Holy Trinity" architecture:
 
 ---
 
-## Platform Statistics (Repository Snapshot 2026-07-22, git-verified)
+## Platform Statistics (Repository Snapshot 2026-09-29, git-verified)
 
 | Metric                                           | Value                                             |
 | ------------------------------------------------ | ------------------------------------------------- |
 | **Source Files (`src/`)**                        | 322 TypeScript/TSX files (234 `.ts` + 88 `.tsx`)  |
 | **React Components (`src/`)**                    | 88 `.tsx` component files                         |
-| **Page Routes (`src/pages/`)**                   | 0 page files; routes live under app/domain folders |
 | **Edge Functions (`supabase/functions/`)**       | 35 directories (34 function dirs + `_shared`)     |
-| **Database Migrations (`supabase/migrations/`)** | 108 `.sql` files (git-verified 2026-07-17; includes 2 new migrations added in PR #1641) |
-| **CI/CD Workflows (`.github/workflows/`)**       | 22 workflow files                                 |
-| **Test Specs (`tests/` + `e2e` + `sim` + app/orchestrator/package tests)** | 388 spec/test source files in the current scan; latest pass counts are recorded in audit/validation artifacts |
-| **Custom Hooks (`src/` + app surfaces)**         | 23 hook files matching `use*.ts*` in `src/`       |
-| **Orchestrator (Python)**                        | 148 tracked files (Temporal workers, activities, security; excludes `__pycache__`) |
+| **Database Migrations (`supabase/migrations/`)** | 126 `.sql` files (116 forward + 10 rollback)      |
+| **CI/CD Workflows (`.github/workflows/`)**       | 23 workflow files                                 |
+| **Test/spec sources (whole repo)**               | 491 files (`*.test.*`, `*.spec.*`, `test_*.py`)   |
+| **Vitest (root suite)**                          | 3216 passed, 70 skipped, 25 todo (303 files)      |
+| **Custom Hooks (`src/`)**                        | 23 hook files matching `use*.ts*` in `src/`       |
+| **Orchestrator (Python)**                        | 149 tracked files (excludes `__pycache__`)        |
 
-**Latest repo-history note:** current audited baseline for this documentation sync is `1048eb5` on `main` — PR #1654 (`fix(ci): resolve verify:claim-hygiene with verified Armageddon evidence`), merged 2026-07-22. Since the prior `48e8b7e` (PR #1646) baseline recorded below, `main` picked up PR #1648 (SonarQube audit-debt cleanup + 100% `apex-arise` test coverage), #1649 (lockfile sync fix for post-CI release workflows), #1650–#1651 (supply-chain security audit fixes), #1652 (Armageddon Level 7 Certification Plaque feature), #1653 (dependabot: 15 npm/Python vulnerabilities resolved), and #1654 (claim-hygiene fix for the Armageddon evidence gate). A follow-on PR #1655 (release-gate CI audit — wiring 4 previously-orphaned CI gates, a `verify-release.mjs` duplicate-stage fix, and a new `check-ops-doc-claim-integrity.mjs` gate) is open for review on branch `claude/post-ci-workflow-error-9mcg2i` and **not yet merged** as of this doc pass. Prior baseline detail: `48e8b7e` was PR #1646 (`fix(accessibility): WCAG AA contrast ratios in landing.css & 100% test coverage for apex-arise`), squash-merged 2026-07-21T22:34:37Z. Between the earlier `418c4840` (PR #1644) baseline and that one, `main` also picked up `eeb86fc` (`feat(manifesto): brand-unify apex-manifesto, add MAN Mode section, wire ecosystem links` — touches only `apps/omnihub-site/public/{apex-manifesto,manifesto}.html`, out of scope for this doc pass per root `CLAUDE.md`). PR #1646 itself: WCAG AA contrast fixes in `landing.css`, 100% `apex-arise` test coverage, plus CI/security remediation (dompurify patch for a same-day CVE, verified opentelemetry fix, SonarCloud scanner routed to Java 21 via `SONAR_SCANNER_JAVA_EXE_PATH` after SonarQube Cloud dropped Java <21 support 2026-07-20). A fabricated dependency-audit claim that had been sitting in `docs/APEX_AGENT_OPERATIONS.md` §9.13 since before this PR (claiming an `npm audit fix` that never touched `package-lock.json`) was found and removed in the same follow-up pass — see `memory/omni-recall/wiki/corrections/005-fabricated-dependency-audit-claim.md`. Release line remains **1.8.3** (`package.json`, unchanged). **Releases are cut manually by the owner** (deliberate version bump via `changeset version` → `chore: version packages`); CI validates and `compliance.yml` attaches SBOM evidence. CI does not decide or certify releases. Current release evidence boundary: repo-verified remediations are tracked in [`docs/release/release-validation-matrix.json`](./docs/release/release-validation-matrix.json); full production certification still requires owner/live validation for items labeled `BLOCKED` or `REQUIRES_MANUAL_VALIDATION`. Workflow count: **22**. Edge function dirs: **35** (34 + `_shared`). SQL migrations: **108** forward + 4 rollback = **112** total (2026-07-22 git-verified; forward count unchanged since PR #1641). See [`CURRENT_PLATFORM_STATE_2026_07_16.md`](./memory/omni-recall/docs/CURRENT_PLATFORM_STATE_2026_07_16.md) and [`CANONICAL_STATE_2026-07-22.md`](./.understand-anything/CANONICAL_STATE_2026-07-22.md) for the current platform state assessment.
+Counts are reproducible with the commands in [CURRENT_PLATFORM_STATE_2026_09_29.md](./memory/omni-recall/docs/CURRENT_PLATFORM_STATE_2026_09_29.md) §8; the test/spec count uses a different scan than earlier snapshots and is not comparable to them. Older baselines (including the July 2026 history and PR-by-PR notes that used to live here) are preserved in the dated files under [`memory/omni-recall/docs/`](./memory/omni-recall/docs/) and [`.understand-anything/`](./.understand-anything/).
 
 
 ---
@@ -123,6 +137,8 @@ A 3-tier agent architecture designed to keep unsafe reasoning from reaching prod
 - Saga-style compensation patterns
 - Idempotent task execution
 - Manual Approval Node gates (**MAN Mode** - `supabase/migrations/20260108120000_man_mode.sql`)
+
+> **Status (2026-09-29):** the orchestrator code is maintained here, but the hosted orchestrator service is suspended and is not part of the revenue path. See the [hosting memo](./memory/omni-recall/rfc/RFC_2026_09_28_ORCHESTRATOR_HOSTING.md).
 
 ### 3) Fortress Protocol (Security & Compliance)
 
@@ -162,17 +178,44 @@ Client-side infrastructure for deterministic media delivery:
 
 ## Edge Functions (35 Directories in Repository: 34 function dirs + `_shared`)
 
+The 34 functions below are the repository's canonical set (`scripts/ci/edge-functions.manifest.json`, enforced by `npm run check:edge-fn-manifest`). What is **deployed** differs from what is in the repository — check the current listing in [CURRENT_PLATFORM_STATE_2026_09_29.md](./memory/omni-recall/docs/CURRENT_PLATFORM_STATE_2026_09_29.md) §4 before assuming a function is live. Authentication is per function (user JWT, signed webhook, API key or shared secret); the audited mechanisms for the functions that skip gateway JWT verification are in the [operations log §9.44](./docs/APEX_AGENT_OPERATIONS.md). Production edge functions deploy only from CI on `main` (see [operations manual §5](./docs/APEX_AGENT_OPERATIONS.md)).
+
 | Function                 | Purpose                    |
 | ------------------------ | -------------------------- |
-| `apex-voice`             | Real-time voice processing |
-| `apex-agent`             | APEX Agent — primary AI orchestration endpoint |
-| `omnilink-port`          | Universal connector        |
-| `trigger-workflow`       | Temporal dispatch          |
-| `verify-nft`             | NFT ownership check        |
-| `web3-verify`            | SIWE authentication        |
-| `send-push-notification` | Mobile push delivery       |
-| `ops-voice-health`       | Ops voice health check     |
-| `execute-automation`     | Workflow execution         |
+| `activate-client` | Plan activation for the signed-in user (calls the activation RPC) |
+| `alchemy-webhook` | Alchemy chain-event webhook receiver (signature-verified) |
+| `apex-agent` | APEX Agent — primary AI orchestration endpoint (also handles `oauth_exchange`) |
+| `apex-assistant` | Deprecated; returns 410 and points callers to `apex-agent` |
+| `apex-voice` | Real-time voice (WebSocket) |
+| `byom-cockpit` | BYOM cockpit API |
+| `byom-login` | BYOM login: provider connections and model registration |
+| `byom-proxy` | BYOM secure streaming relay |
+| `create-billing-portal` | Stripe Customer Portal session |
+| `create-checkout` | Stripe Checkout session for paid plans |
+| `execute-automation` | Automation rule execution |
+| `execute-workflow` | Workflow execution (cron secret or user JWT) |
+| `generate-business-skills` | SkillForge business-skill generation |
+| `identity-webauthn` | Device-bound passkey (WebAuthn) registration and assertion |
+| `mcp-gateway` | MCP gateway with scoped read/write keys, per-call audit and rate limits |
+| `mcp-proxy` | Stdio-transport MCP bridge — **not deployable** in the Edge Runtime (see [security review](./docs/contracts/MCP_PROXY_SECURITY_REVIEW.md)) |
+| `notify-access-request` | Emails the owner when a lead is captured |
+| `omni-runs` | OmniTrace workflow-runs API |
+| `omnibridge-control` | OmniHub → SBBL-HQ override and hotfix control plane |
+| `omnilink-eval` | Evaluation-case scoring |
+| `omnilink-port` | Universal connector (API-key and user routes) |
+| `omnilink-retry-scheduler` | Scheduled retry runner for OmniLink work |
+| `ops-voice-health` | Ops voice health check |
+| `physiomni-action` | PhysiOmni action endpoint (not deployed) |
+| `physiomni-ingest` | PhysiOmni signed device ingest — fail-closed; not deployed |
+| `platform-health` | Platform health probe (also the edge pre-warm target) |
+| `seed-crypto` | Seeds model-registry and provider-connection rows |
+| `send-push-notification` | Mobile push delivery |
+| `storage-upload-url` | Signed upload URLs for tenant Files |
+| `stripe-webhook` | Stripe webhook receiver and subscription lifecycle sync |
+| `trigger-workflow` | Temporal dispatch (the idempotent workflow gateway) |
+| `verify-nft` | NFT ownership check |
+| `web3-nonce` | Wallet-signature nonce issuance |
+| `web3-verify` | SIWE authentication |
 
 ---
 
@@ -189,11 +232,11 @@ APEX OmniHub requires **Node.js 22+** (Node 22 LTS recommended; Node 24 also sup
 /apps/omnihub-site/dashboard/components/  -  Panels/widgets: (Today, Pipeline, KPIs, Ops, etc.)
 /src/omnidash/uiRegistry.ts  -   UI registry wiring
 
-/supabase/migrations - Database schema (112 .sql files: 108 forward + 4 rollback)
+/supabase/migrations - Database schema (126 .sql files: 116 forward + 10 rollback)
 /supabase/functions  - Edge functions (34 function directories + _shared = 35 total)
-/orchestrator        - Temporal workers and orchestration services (148 tracked files)
+/orchestrator        - Temporal workers and orchestration services (149 tracked files)
 /tests               - Automated test suite
-/.github/workflows   - CI/CD workflows (22 workflow files)
+/.github/workflows   - CI/CD workflows (23 workflow files)
 ```
 
 ---
@@ -251,18 +294,19 @@ pip install -r requirements.txt
 python -m main
 ```
 
-### Docker (production compose)
+### Docker (orchestrator production overlay)
 
 ```bash
-docker compose -f docker-compose.prod.yml up -d
+cd orchestrator
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 
 ### Deployment Targets
 
 | Slot | URL | Notes |
 |---|---|---|
-| Production | https://apexomnihub.icu | Cloudflare Pages — canonical production |
-| Shadow | https://apex-omnihub-shadow.pages.dev | Shadow slot provisioned 2026-05-20 |
+| Production | https://apexomnihub.icu | Cloudflare Pages — canonical production; the Pages project builds from `main` with automatic production deployments enabled (project settings read 2026-09-29) |
+| Shadow | https://apex-omnihub-shadow.pages.dev | Shadow slot provisioned 2026-05-20; production deployments and branch previews are off (2026-09-29) |
 
 ---
 
@@ -281,15 +325,23 @@ npm run build      # Production build
 
 | Workflow                        | Trigger         | Purpose                      |
 | ------------------------------- | --------------- | ---------------------------- |
-| `ci-runtime-gates`              | PR/Push         | Build, test, lint, typecheck |
-| `cd-staging`                    | Push to develop | Staging deployment           |
-| `deploy-web3-functions`         | Push to main    | Edge function deployment     |
-| `secret-scanning`               | PR              | Security scanning            |
-| `chaos-simulation-ci`           | Scheduled       | Resilience testing           |
-| `alert-guard-rail-violation`    | CI failure      | Guardrail violation alerting |
+| `ci-runtime-gates`              | PR / push to main | Build, test, lint, typecheck |
+| `apex-governance`               | PR / push to main | APEX policy, secret scan, dependency audit, RFC marker, OmniSkin guard (aggregate `governance-gate`) |
+| `rsi-governance`                | PR              | RSI governance gate for governed workflow and policy files |
+| `ops-doc-guard`                 | PR              | Requires an operations-doc update alongside critical files |
+| `security-regression-guard`     | PR / push to main | Security + dependency guards |
+| `secret-scanning`               | Push / PR / scheduled | Secret scanning        |
+| `orchestrator-ci`               | Push / PR       | Orchestrator Python test suite |
 | `integration`                   | Push to main/work/develop | Integration E2E harness |
-| `security-regression-guard`     | PR/Push         | Security + dependency guards |
-| `orchestrator-ci`               | Push            | Orchestrator Python test suite |
+| `chaos-simulation-ci`           | Push / PR / scheduled | Resilience testing     |
+| `cd-staging`                    | Push to main / manual | Staging deployment  |
+| `release`                       | Push to main / manual | Release validation (a release is cut only by the owner's version commit) |
+| `deploy-production-cf-direct`   | Manual          | Governed Cloudflare Pages production deploy |
+| `deploy-web3-functions`         | Manual, reviewer-gated | Edge function deployment (functions only, never migrations) |
+| `deploy-mcp-gateway`            | Manual, reviewer-gated | Deploys only the `mcp-gateway` function |
+| `alert-guard-rail-violation`    | After a CI run  | Guardrail violation alerting |
+
+The two Supabase deploy workflows run in the `production-db` GitHub environment (required reviewer) and only from `main`; a test (`tests/infrastructure/deploy-workflow-gates.test.ts`) fails the build if any workflow that uses the Supabase deploy secrets gains an automatic trigger.
 
 ---
 
@@ -299,10 +351,14 @@ Full documentation is available in the [`docs/`](./memory/omni-recall/docs/) dir
 
 | Document                                                                                | Description           |
 | --------------------------------------------------------------------------------------- | --------------------- |
-| [Current Platform State](./memory/omni-recall/docs/CURRENT_PLATFORM_STATE_2026_07_16.md)             | Current branch/head assessment and drift-control facts |
+| [Current Platform State](./memory/omni-recall/docs/CURRENT_PLATFORM_STATE_2026_09_29.md)             | Current head, verified counts, production state and open owner items |
 | [Release Notes v1.6.0](./memory/omni-recall/archive/docs/releases/RELEASE_NOTES_v1.6.0.md)                 | Historical v1.6.0 release notes |
 | [Executive Architecture Summary](./memory/omni-recall/docs/architecture/EXECUTIVE_ARCHITECTURE_SUMMARY.md) | System design         |
 | [Production Certification Status](./docs/release/release-validation-matrix.json) | Current certification authority |
+| [Production Validation Harness](./docs/release/production-validation-harness.md) | How the live production-safe validation runs |
+| [Revenue Execution Contract](./docs/contracts/REVENUE_EXECUTION_CONTRACT.md) | APEX-REV-2026-09 scope, findings and work packages |
+| [Entitlement Matrix](./docs/contracts/ENTITLEMENT_MATRIX.md) | What each plan promises, and whether it is implemented and enforced |
+| [Operations Manual and Change Log](./docs/APEX_AGENT_OPERATIONS.md) | Canonical deploy procedures, incidents, per-change log |
 | [Documentation Release Index](./memory/omni-recall/docs/DOCUMENTATION_RELEASE_INDEX.md)                  | Current docs map, READMEs, status, audits, runbooks |
 | [Testing Evidence & Armageddon Reports](./memory/omni-recall/docs/testing/README.md)                    | Validation history    |
 | [PR Triage Report](./memory/omni-recall/docs/ops/PR_TRIAGE.md)                                      | Open PR resolution matrix |

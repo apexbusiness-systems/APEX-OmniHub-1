@@ -7,6 +7,8 @@ status: verified
 <!-- APEX_DOC_STAMP: VERSION=v8.0-LAUNCH | LAST_UPDATED=2026-05-20 -->
 # OMNILINK_HYBRID_CERTIFICATION
 
+> **Current-state note (2026-09-29):** these `npm run` names in this document are not defined in any `package.json` in the repository and should be treated as planned or historical, not runnable: `cap:build:ios`, `cap:build:android`, `cap:ios`, `cap:android`. The runnable scripts are in the root `package.json`.
+
 **Date:** 2026-01-26  
 **Scope:** Hybrid Mobile App + OMEGA Architecture + M.A.E.S.T.R.O.  
 **Branch Certified:** `feature/native-wrapper-capacitor-20260125` & `feature/maestro-marketing-showcase-20260126`  

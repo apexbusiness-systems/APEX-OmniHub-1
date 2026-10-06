@@ -61,8 +61,8 @@ This rule is enforced by `AGENTS.md §4 Tree Law`. Violation = automatic NO-GO.
 | `apps/omnihub-site/dashboard/DraggableWidget.tsx` | Native pointer-capture drag/drop system | 🔴 CRITICAL |
 | `apps/omnihub-site/dashboard/components/OmniSpatialHost.tsx` | **Sole modal chrome owner** — all modules render inside this | 🔴 CRITICAL |
 | `apps/omnihub-site/dashboard/components/ModuleRenderer.tsx` | Dynamic module lazy-loader by `moduleKey` | 🔴 CRITICAL |
-| `apps/omnihub-site/dashboard/components/ModuleShell.tsx` | Module content wrapper (title, actions) | 🟡 HIGH |
-| `apps/omnihub-site/dashboard/components/TopHeader.tsx` | OmniDash top bar | 🟡 HIGH |
+| `apps/omnihub-site/dashboard/components/modules/ModuleShell.tsx` | Module content wrapper (title, actions) | 🟡 HIGH |
+| `apps/omnihub-site/dashboard/OmniDashShell.tsx` (header region) | OmniDash top bar; there is no separate `TopHeader.tsx` file (verified 2026-09-29) | 🟡 HIGH |
 | `apps/omnihub-site/dashboard/contexts/LayoutContext.tsx` | Layout state (userId, panelLayout) | 🟡 HIGH |
 | `apps/omnihub-site/dashboard/designSystem.tsx` | Design tokens and shared primitives | 🟡 HIGH |
 
@@ -484,7 +484,7 @@ These are **read-only** from the agent's perspective unless explicitly tasked to
 | `create-billing-portal` | `BillingModule` | Billing portal redirect |
 | `activate-client` | `OnboardingWizard` | New user activation |
 | `create-checkout` | `OnboardingWizard` | Stripe checkout |
-| `identity-webauthn` | `src/lib/webauthnClient.ts` | WebAuthn registration/auth |
+| `identity-webauthn` | `apps/omnihub-site/src/lib/webauthnClient.ts` | WebAuthn registration/auth |
 | `byom-login` | `ConnectAiAuthModal` | BYOM provider auth |
 | `byom-proxy` | `EyesVisionInput` | BYOM AI proxy |
 | `functions/api/mcp/invoke.ts` | `mcp-client.ts` | MCP tool invocation |
@@ -586,6 +586,6 @@ Source: `apps/omnihub-site/dashboard/contracts/omniSurfaceOwnership.ts`
 *VALIDATED_FUNCTIONING — player proven; production backend confirmed (omnilink-port deployed,*
 *`omnimedia_assets` RLS + 4 policies, catalog empty pending owner upload).*
 *Frozen baseline + reproduction: `memory/omni-recall/omnidash-surface-1.8.3-baseline-2026-07-04.md`.*
-*Evidence: `docs/audits/omnidash-surface-alignment-glass-2026-07-04.md`.*  
+*Evidence: `docs/audits/omnidash-surface-alignment-glass-2026-06-30.md` (the report is dated 2026-07-04 inside; the file name carries 2026-06-30).*  
 *Update this file whenever surface ownership, module keys, paths, or DB tables change.*  
 *Canonical source files: `AGENTS.md`, `apps/omnihub-site/src/App.tsx`, `dashboard/contracts/omniSurfaceOwnership.ts`, `src/contracts/omnidash-sidebar-widgets.ts`, `dashboard/components/ModuleRenderer.tsx`*

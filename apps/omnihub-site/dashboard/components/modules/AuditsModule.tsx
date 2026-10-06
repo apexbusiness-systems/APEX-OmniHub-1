@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { useOmniModuleState } from '@/hooks/useOmniModuleState';
 import { ModuleShell } from './ModuleShell';
 import { exportAuditLogCSV } from '@/dashboard/utils/exportAuditLog';
+import { usePlan } from '@/hooks/usePlan';
 import type { ModuleListItem } from '@/dashboard/components/ModuleRegistry';
 import { ArmageddonCertificationPlaque } from '@/dashboard/components/ArmageddonCertificationPlaque';
 
@@ -159,8 +160,10 @@ export default function AuditsModule({ onClose }: Props) {
   // fall back to static category baseline when state is unavailable.
   const shellState = useMemo(() => ({ ...state, items: [] as readonly ModuleListItem[] }), [state]);
 
+  const { canAccessPhysiOmni: isBusinessOrAbove } = usePlan(); // usePlan: true when tier >= business
   const handleAction = useCallback(async (actionId: string): Promise<boolean | string> => {
     if (actionId === 'export-audit') {
+      if (!isBusinessOrAbove) return 'Audit exports are included in the Business plan.';
       const result = await exportAuditLogCSV();
       return result.message;
     }
@@ -169,7 +172,7 @@ export default function AuditsModule({ onClose }: Props) {
       return result.message;
     }
     return false;
-  }, []);
+  }, [isBusinessOrAbove]);
 
   return (
     <ModuleShell state={shellState} onClose={onClose} onAction={handleAction}>

@@ -9,6 +9,8 @@ status: verified
 
 # Plugin Architecture
 
+> **Current-state note (2026-09-29):** these `npm run` names in this document are not defined in any `package.json` in the repository and should be treated as planned or historical, not runnable: `plugin:install`, `plugin:enable`, `plugin:verify`, `plugin:validator`. The runnable scripts are in the root `package.json`.
+
 ## Implementation Status (2026-05-20)
 
 | Phase | Status |

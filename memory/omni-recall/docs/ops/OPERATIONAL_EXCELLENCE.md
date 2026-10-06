@@ -9,6 +9,8 @@ status: verified
 
 # Operational Excellence Framework
 
+> **Current-state note (2026-09-29):** these `npm run` names in this document are not defined in any `package.json` in the repository and should be treated as planned or historical, not runnable: `deploy:staging`, `deploy:production`, `ops:monitor`, `deploy:rollback`. The runnable scripts are in the root `package.json`.
+
 ## Verification Status Legend
 
 > VERIFIED — Confirmed by implementation or repo evidence in this snapshot.

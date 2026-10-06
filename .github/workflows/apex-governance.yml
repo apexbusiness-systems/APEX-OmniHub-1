@@ -81,6 +81,10 @@ jobs:
         with:
           config-path: .github/gitleaks.toml
 
+      # Dependency-free: secret-like VITE_ vars are inlined into the browser bundle.
+      - name: Client env secret-name guard
+        run: npm run check:client-secret-env
+
   dependency-audit:
     name: Dependency vulnerability scan
     runs-on: ubuntu-22.04

@@ -1,16 +1,44 @@
 name: Deploy Web3 Functions
 
+# Manual, reviewer-gated deploy of one edge-function set per run: the Web3 and
+# billing-portal functions, or apex-agent (chosen with the `target` input).
+#
+# * Trigger: workflow_dispatch only. There is no push trigger, so merging to main
+#   never deploys anything.
+# * The job runs in the GitHub Environment `production-db`, which must have the owner
+#   as a required reviewer and deployment branches limited to `main`.
+# * It never touches the database: no `supabase db push`, no migration repair, no
+#   --include-all. Migrations are applied by the owner through their own gated path.
+# * Secrets (names only): SUPABASE_ACCESS_TOKEN and SUPABASE_PROJECT_REF for the deploy;
+#   SUPABASE_ANON_KEY (fallback SUPABASE_SERVICE_ROLE_KEY) for the health check.
+
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'supabase/functions/**'
-      - 'supabase/migrations/**'
   workflow_dispatch:
+    inputs:
+      reason:
+        description: "Why is a production functions deploy being run?"
+        required: true
+        type: string
+      target:
+        description: "Which function set to deploy"
+        required: true
+        type: choice
+        options:
+          - web3-and-billing
+          - apex-agent
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-web3-functions
+  cancel-in-progress: false
 
 jobs:
   deploy-functions:
-    name: Deploy Supabase Edge Functions
+    name: Deploy Supabase Edge Functions (reviewer-gated)
+    if: github.ref == 'refs/heads/main'
+    environment: production-db
     runs-on: ubuntu-22.04
     timeout-minutes: 10
     env:
@@ -27,69 +55,54 @@ jobs:
         with:
           version: latest
 
-      - name: Link to Supabase
-        # Ensures the CLI knows which project to target for subsequent commands
+      - name: Require deploy secrets (fails closed)
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
-        run: supabase link --project-ref $SUPABASE_PROJECT_REF
-
-      - name: Repair Migration History
-        # Fix: Mark old migration as reverted after file rename
-        # The migration was renamed from 20260109 to 20260109120000 to avoid version collision
-        # Fix: 20260226000001 exists in remote schema_migrations but db push re-attempts INSERT
-        # (duplicate key). Revert clears the stale entry; db push re-inserts cleanly via empty file.
-        # Fix (OmniMedia): 20260628005132 / 20260629010526 were applied to remote under dev-time
-        # timestamps, then committed under the canonical names 20260628000000_omnimedia_pipeline.sql
-        # and 20260629120000_omnimedia_images_and_caps.sql. The stale remote rows have no local
-        # files, so `db push --include-all` aborts ("remote migration versions not found in local
-        # migrations directory"). Reverting clears the stale bookkeeping; the canonical files are
-        # additive + idempotent ("safe to run multiple times"), so db push re-applies them cleanly.
         run: |
-          supabase migration repair --status reverted 20260109 || echo "Migration 20260109 already handled or does not exist"
-          supabase migration repair --status reverted 20260226000001 || echo "Migration 20260226000001 already handled or does not exist"
-          supabase migration repair --status reverted 20260623074530 || echo "Migration 20260623074530 already handled or does not exist"
-          supabase migration repair --status reverted 20260628005132 || echo "Migration 20260628005132 already handled or does not exist"
-          supabase migration repair --status reverted 20260629010526 || echo "Migration 20260629010526 already handled or does not exist"
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
-
-      - name: Apply Database Migrations
-        # Critical: Deploys schema changes (e.g., 'emergency_controls' table) BEFORE functions
-        # fix: Removes invalid 'desc' key
-        run: supabase db push --include-all --yes
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          if [ -z "${SUPABASE_ACCESS_TOKEN:-}" ] || [ -z "${SUPABASE_PROJECT_REF:-}" ]; then
+            echo "::error::SUPABASE_ACCESS_TOKEN and SUPABASE_PROJECT_REF must be set (production-db environment or repository secrets)."
+            exit 1
+          fi
 
       - name: Deploy Edge Functions
-        # fix: Fixed broken env indentation and formatting
-        run: |
-          supabase functions deploy web3-nonce
-          supabase functions deploy web3-verify
-          supabase functions deploy alchemy-webhook
-          supabase functions deploy verify-nft
-          supabase functions deploy platform-health
-          supabase functions deploy omnilink-port
-          supabase functions deploy create-billing-portal
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          DEPLOY_TARGET: ${{ inputs.target }}
+        run: |
+          set -euo pipefail
+          case "$DEPLOY_TARGET" in
+            web3-and-billing)
+              functions="web3-nonce web3-verify alchemy-webhook verify-nft platform-health omnilink-port create-billing-portal"
+              ;;
+            apex-agent)
+              functions="apex-agent"
+              ;;
+            *)
+              echo "::error::Unknown deploy target: ${DEPLOY_TARGET}"
+              exit 1
+              ;;
+          esac
+          for fn in $functions; do
+            supabase functions deploy "$fn" --project-ref "$SUPABASE_PROJECT_REF"
+          done
 
       - name: Deployment Summary
         if: always()
+        env:
+          DEPLOY_REASON: ${{ inputs.reason }}
+          DEPLOY_TARGET: ${{ inputs.target }}
         run: |
           echo "## 🚀 Edge Functions Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "Target: ${DEPLOY_TARGET}" >> $GITHUB_STEP_SUMMARY
+          echo "Reason: ${DEPLOY_REASON}" >> $GITHUB_STEP_SUMMARY
           if [ "${{ job.status }}" == "success" ]; then
             echo "✅ **Status:** Success" >> $GITHUB_STEP_SUMMARY
-            echo "All functions and migrations applied successfully." >> $GITHUB_STEP_SUMMARY
+            echo "The listed functions were deployed. No database changes were made." >> $GITHUB_STEP_SUMMARY
           else
             echo "❌ **Status:** Failed" >> $GITHUB_STEP_SUMMARY
-            echo "Check logs for details on migration or deployment errors." >> $GITHUB_STEP_SUMMARY
+            echo "Check logs for details on the deployment error." >> $GITHUB_STEP_SUMMARY
           fi
 
       - name: Test Function Health

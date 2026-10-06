@@ -20,13 +20,15 @@ const tierLevels: Record<SubscriptionTier, number> = {
   free: 0,
   starter: 1,
   pro: 2,
-  enterprise: 3,
+  business: 3,
+  enterprise: 4,
 };
 
 const tierNames: Record<SubscriptionTier, string> = {
   free: 'Free',
   starter: 'Starter',
   pro: 'Pro',
+  business: 'Business',
   enterprise: 'Enterprise',
 };
 

@@ -6,6 +6,8 @@ status: verified
 
 # SBBL-HQ Integration Patch — v1.6.0 Bidirectional Wiring
 
+> **Current-state note (2026-09-29):** these `npm run` names in this document are not defined in any `package.json` in the repository and should be treated as planned or historical, not runnable: `cf:deploy`. The runnable scripts are in the root `package.json`.
+
 ## Vercel Reference Classification
 
 LEGACY — retained for historical/reference use; Cloudflare-first topology is canonical. Any Vercel commands, rollback paths, modules, or Edge Runtime references in this document are not current deployment proof unless separately labeled VERIFIED with active configuration evidence. See `docs/architecture/CANONICAL_TRUTH_MATRIX.md`.

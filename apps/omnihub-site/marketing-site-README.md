@@ -161,7 +161,7 @@ siteConfig.nav.links; // Features, Solutions, Integrations, Pricing
 
 | Variable                     | Required   | Description               |
 | ---------------------------- | ---------- | ------------------------- |
-| `VITE_ENABLE_REQUEST_ACCESS` | No         | `true` to enable Supabase |
+| `VITE_ENABLE_REQUEST_ACCESS` | No         | On by default; `false` forces the mailto fallback |
 | `VITE_SUPABASE_URL`          | If enabled | Supabase project URL      |
 | `VITE_SUPABASE_ANON_KEY`     | If enabled | Supabase anonymous key    |
 

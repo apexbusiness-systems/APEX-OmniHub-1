@@ -6,6 +6,8 @@ status: verified
 
 # APEX Enterprise Control Plane Runtime
 
+> **Current-state note (2026-09-29):** these `npm run` names in this document are not defined in any `package.json` in the repository and should be treated as planned or historical, not runnable: `release:lattice`. The runnable scripts are in the root `package.json`.
+
 ## Runtime convergence
 
 - Canonical CI/runtime target: **Node 24**.

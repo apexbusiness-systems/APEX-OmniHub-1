@@ -4,7 +4,7 @@
 
 This harness supports a truthful production-certification decision for `https://apexomnihub.icu`. It is intentionally non-destructive by default. It does **not** certify production by its existence; each release-critical item is certified only when the matrix item is `VERIFIED` with retained evidence.
 
-Current recommendation: **GO for claiming fully certified production functionality**. Cloudflare provenance, authenticated workflows, Request Access persistence/fallback proof, Supabase RLS, BYOM, billing, mobile/device, performance/load, and branch protection are verified with live evidence.
+Current status (corrected 2026-09-29 to match `docs/release/release-validation-matrix.json`, the authority): the matrix decision is `GO_FOR_FULL_PRODUCTION_CERTIFICATION` with **19 of 20 items `VERIFIED`** with live evidence (Cloudflare provenance, authenticated workflows, Supabase RLS, BYOM, billing sandbox, mobile/device, performance/load, branch protection and the rest). **`REQUEST_ACCESS_PROOF` is `HONESTLY_GATED`**: backend persistence of a submitted lead has not been proven (`backendPersistenceProven: false`; it needs an explicit test write with `APEX_REQUEST_ACCESS_WRITE_OK=true`). Do not claim Request Access persistence as verified. Context: production builds compiled the server-side lead insert out until 2026-09-28 (`docs/APEX_AGENT_OPERATIONS.md` §9.50), so an earlier reading of this line as "persistence verified" was not supported by the evidence. The September 2026 changes are not covered by this matrix.
 
 ## Preflight access/safety matrix
 
@@ -34,6 +34,58 @@ npm run perf:k6:smoke
 npm run check:pwa
 npm run test -- tests/omnidash/useOmniDashAction.spec.tsx tests/omnidash/fake-success-guardrails.spec.tsx
 ```
+
+## Live validation specs (2026-09-05)
+
+The production-safe suite is one harness with one entrypoint. Do not add a parallel one.
+
+| File | Matrix item | Certifies |
+| --- | --- | --- |
+| `tests/e2e-playwright/production-safe.live.ts` | `BROWSER_PUBLIC_ROUTES`, `PWA_MOBILE_WEB` | Route render evidence |
+| `tests/e2e-playwright/production-safe-negative-controls.live.ts` | — | Nothing. Controls only: logged-out gating and client-side service-role absence. They can falsify, never certify. |
+| `tests/e2e-playwright/production-safe-auth.live.ts` | `AUTH_EMAIL_PASSWORD` | Login, session artifact, protected route, real session termination |
+| `tests/e2e-playwright/production-safe-persistence.live.ts` | `OMNIDASH_LIVE_PERSISTENCE` | Backend-accepted write + network-sourced read-back after a hard reload |
+| `tests/e2e-playwright/production-safe-rls.live.ts` | `SUPABASE_RLS_MULTI_TENANT` | Tenant B denied on Tenant A's row, via UI and API |
+
+Shared primitives live in `tests/e2e-playwright/helpers/production-validation-evidence.ts`
+(redaction, run-scoped evidence, credential gating) and
+`tests/e2e-playwright/helpers/production-validation-probes.ts` (network recording,
+client-surface scan, login/logout). Every live file uses the `*.live.ts` suffix so
+default `*.spec.ts` discovery can never hit production by accident, and each throws at
+module scope unless `APEX_RUN_PRODUCTION_SAFE=true`.
+
+### Credentials
+
+Owner credentials load from environment variables only, optionally via an untracked
+`.env.production-validation` (gitignored) read by
+`scripts/ci/run-production-safe-validation.mjs`:
+
+```
+APEX_PROD_URL=https://apexomnihub.icu
+APEX_TEST_USER_EMAIL=...
+APEX_TEST_USER_PASSWORD=...
+APEX_TENANT_B_EMAIL=...
+APEX_TENANT_B_PASSWORD=...
+```
+
+Values are never printed, logged, committed, or written to an evidence file. Evidence
+records credential **variable names** only. When a required variable is missing the
+relevant spec writes a `REQUIRES_MANUAL_VALIDATION` record naming the missing variables
+and skips with an `APEX-2030` tracker — it never degrades into a pass.
+
+### Promotion rule
+
+Every evidence record carries `certifies`. A matrix item may be promoted to `VERIFIED`
+**only** from a record with `certifies: true`. `UNCERTAIN` records carry a `resolvedBy`
+field naming the exact additional signal required; they are not partial passes.
+
+### Browser-egress fallback
+
+`scripts/ci/collect-production-http-evidence.mjs` collects HTTP-layer evidence (route
+status, security headers, and a conclusive scan of the shipped client bundle for a
+Supabase service-role credential) for environments where the browser cannot reach
+production but Node can. It writes `certifies: false` on every record by design: it can
+falsify, never certify.
 
 ## Evidence policy
 

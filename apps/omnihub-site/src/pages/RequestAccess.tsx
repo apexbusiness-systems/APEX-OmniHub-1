@@ -24,10 +24,11 @@ import { Layout } from '@/components/Layout';
 import { SEOMeta } from '@/components/SEOMeta';
 import { Section, SectionHeader } from '@/components/Section';
 import { requestAccessConfig } from '@/content/site';
+import { ANON_FORM_CLIENT_OPTIONS, submitAccessRequest } from '@/lib/accessRequestSubmit';
 
 /** Check if Supabase integration is enabled via environment variables */
 const ENABLE_SUPABASE =
-  import.meta.env.VITE_ENABLE_REQUEST_ACCESS === 'true' &&
+  import.meta.env.VITE_ENABLE_REQUEST_ACCESS !== 'false' && // on by default (WP-05); 'false' opts out
   Boolean(import.meta.env.VITE_SUPABASE_URL) &&
   Boolean(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY);
 
@@ -432,23 +433,17 @@ export function RequestAccessPage(): JSX.Element {
           const { createClient } = await import('@supabase/supabase-js');
           const supabase = createClient(
             import.meta.env.VITE_SUPABASE_URL,
-            import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY
+            import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY,
+            ANON_FORM_CLIENT_OPTIONS
           );
 
-          // Upsert for idempotency - requires UNIQUE constraint on email
-          const { error } = await supabase.from('access_requests').upsert(
-            {
-              email: sanitizedData.email,
-              name: sanitizedData.name,
-              company: sanitizedData.company || null,
-              use_case: sanitizedData.useCase || null,
-            },
-            { onConflict: 'email' }
-          );
-
-          if (error) {
-            throw new Error(error.message);
-          }
+          // Anon-only, idempotent on email (ON CONFLICT DO NOTHING); throws an opaque error
+          await submitAccessRequest(supabase, {
+            email: sanitizedData.email,
+            name: sanitizedData.name,
+            company: sanitizedData.company || null,
+            use_case: sanitizedData.useCase || null,
+          });
 
           setLastSubmitTime(hasConsent);
           setIsSuccess(true);

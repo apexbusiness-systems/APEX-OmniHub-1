@@ -12,7 +12,7 @@ status: verified
 
 ## Quick Reference
 
-31 Edge Functions deployed as of 2026-05-31.
+**Reconciled 2026-09-29 (Quick Reference table only; the endpoint sections below were not re-audited):** the repository holds **34** edge functions (`scripts/ci/edge-functions.manifest.json`); **29** of them are deployed (Supabase Management API, read-only). Not deployed: `mcp-proxy` (must not be deployed — see `docs/contracts/MCP_PROXY_SECURITY_REVIEW.md`), `notify-access-request`, `omnibridge-control`, `physiomni-action`, `physiomni-ingest`. `test-integration` and `omnilink-agent` are deployed but not in the repository (stale). The original list below was written for 31 functions on 2026-05-31; the "Auth Required" column is that original wording, and the rows added on 2026-09-29 state the mechanism in code.
 
 > **Deprecation notice:** `apex-assistant` is deprecated and returns **410 Gone** — all clients must use `apex-agent`. `omnilink-agent` is abolished.
 
@@ -22,7 +22,7 @@ status: verified
 | `apex-voice` | POST | Yes (anon) | Real-time voice processing |
 | `byom-cockpit` | POST | Yes (anon) | Bring-Your-Own-Model cockpit interface |
 | `byom-proxy` | POST | Yes (anon) | Bring-Your-Own-Model proxy relay |
-| `mcp-proxy` | POST | Yes (anon) | MCP protocol proxy |
+| `mcp-proxy` | POST | Yes (anon) | MCP protocol proxy. **Not deployed; do not deploy** (spawns subprocesses the Edge Runtime does not allow). |
 | `apex-agent` | POST | Yes (anon or service) | Submit agent goal for orchestration |
 | `omnilink-eval` | POST | Yes (service only) | Run evaluation suite |
 | `omnilink-port` | POST | Yes (anon) | Universal connector input normalization |
@@ -30,8 +30,8 @@ status: verified
 | `trigger-workflow` | POST | Yes (service) | Dispatch Temporal workflow |
 | `execute-automation` | POST | Yes (service) | Direct workflow execution |
 | `omni-runs` | POST | Yes (anon or service) | Run tracking and management |
-| `test-integration` | POST | Yes (service) | Integration smoke testing |
-| `omnibridge-control` | POST | Yes (service) | OmniBridge command and control |
+| `test-integration` | POST | Yes (service) | Integration smoke testing. **Deployed but not in the repository (stale).** |
+| `omnibridge-control` | POST | Yes (service) | OmniBridge command and control. **Not deployed.** |
 | `generate-business-skills` | POST | Yes (anon) | AI-powered business skill generation |
 | `activate-client` | POST | Yes (service) | Client onboarding activation |
 | `platform-health` | GET | No | Platform health check |
@@ -44,6 +44,15 @@ status: verified
 | `stripe-webhook` | POST | No (HMAC-signed) | Stripe payment event webhook |
 | `send-push-notification` | POST | Yes (service) | Mobile push delivery |
 | `storage-upload-url` | POST | Yes (anon) | Generate signed storage upload URL |
+| `byom-login` | POST | No gateway JWT; the provider API key is the credential (probed against the provider) | BYOM login: derives an identity from the key fingerprint and stores the encrypted connection |
+| `create-billing-portal` | POST | Yes (user JWT) | Stripe Customer Portal session |
+| `execute-workflow` | POST | `X-Cron-Secret` or user JWT (gateway JWT off) | Workflow execution |
+| `identity-webauthn` | POST | Yes (user JWT) | Device-bound passkey (WebAuthn) registration and assertion |
+| `mcp-gateway` | POST | Scoped API key, Bearer (read and write keys; gateway JWT off) | MCP gateway with per-call audit and rate limits |
+| `notify-access-request` | POST | `X-Cron-Secret` (called by a database trigger; **not deployed**) | Emails the owner when a lead is captured |
+| `physiomni-action` | POST | **None in code** — gated by the `PHYSIOMNI_PHYSICAL_ACTIONS_ENABLED` flag (off = 403) and a kill switch; `approved_by` and `bypass_policy` come from the request body and are not verified (**not deployed**; see ops-log 9.56) | PhysiOmni physical-action endpoint |
+| `physiomni-ingest` | POST | Signed device request; refuses all requests (503) when no signing key is configured (**not deployed**) | PhysiOmni device telemetry ingest |
+| `seed-crypto` | POST | Yes (user JWT via `getUser`) | Seeds model-registry and provider-connection rows |
 | `_shared` | — | — | Shared utilities directory (not a callable endpoint) |
 
 ---

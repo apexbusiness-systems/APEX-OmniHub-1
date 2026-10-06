@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { handlePreflight } from "../_shared/cors.ts";
-import { createAnonClient } from "../_shared/supabaseClient.ts";
+import { createAnonClient, createServiceClient } from "../_shared/supabaseClient.ts";
 import { buildSignedHeaders } from "../_shared/requestSigning.ts";
 import { isValidUUID } from "../_shared/validation.ts";
 import {
@@ -38,8 +38,8 @@ async function handleOAuthExchange(
     return errResponse("unauthorized", "Unauthorized", 401, origin);
   }
 
-  // Log the exchange attempt
-  await supabase.from("audit_logs").insert({
+  // Log the exchange attempt (audit_logs accepts writes from server paths only)
+  await createServiceClient().from("audit_logs").insert({
     actor_id: user.id,
     action_type: "oauth_exchange",
     resource_type: "provider_connection",

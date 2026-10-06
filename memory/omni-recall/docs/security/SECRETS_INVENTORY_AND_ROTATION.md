@@ -7,6 +7,8 @@ status: verified
 <!-- APEX_DOC_STAMP: VERSION=v1.5.1-LOGIN-HOTFIX | LAST_UPDATED=2026-05-20 -->
 # SECRETS INVENTORY & ROTATION GUIDE
 
+> **Current-state note (2026-09-29):** these `npm run` names in this document are not defined in any `package.json` in the repository and should be treated as planned or historical, not runnable: `test:edge-functions`, `test:web3`, `test:ai-agent`. The runnable scripts are in the root `package.json`.
+
 ## Vercel Reference Classification
 
 LEGACY — retained for historical/reference use; Cloudflare-first topology is canonical. Any Vercel commands, rollback paths, modules, or Edge Runtime references in this document are not current deployment proof unless separately labeled VERIFIED with active configuration evidence. See `docs/architecture/CANONICAL_TRUTH_MATRIX.md`.

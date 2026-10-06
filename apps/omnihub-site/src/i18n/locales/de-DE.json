@@ -336,8 +336,8 @@
       "session": "SITZUNG",
       "chooseAvatar": "Agenten-Avatar wählen",
       "cancel": "Abbrechen",
-      "pause": "Pause",
-      "start": "Start",
+      "pause": "Pausieren",
+      "start": "Starten",
       "reset": "ZUR.",
       "longPressHint": "Gedrückt halten um Avatar zu ändern",
       "title": "APEX Agent"
@@ -402,9 +402,9 @@
       "autoPilotSub": "Autonome Aufgabenbearbeitung",
       "guardianMode": "Guardian-Modus",
       "guardianModeSub": "KI-Richtliniendurchsetzung",
-      "toggleDemoMode": "Toggle demo mode",
-      "toggleAutoPilot": "Toggle auto pilot",
-      "toggleGuardianMode": "Toggle guardian mode"
+      "toggleDemoMode": "Demomodus umschalten",
+      "toggleAutoPilot": "Autopilot umschalten",
+      "toggleGuardianMode": "Guardian-Modus umschalten"
     },
     "footer": {
       "copyright": "© 2026 APEX Business Systems Ltd.",

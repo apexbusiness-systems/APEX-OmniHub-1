@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
 const read = (path: string) => readFileSync(path, 'utf8');
 
@@ -25,23 +25,28 @@ describe('security hardening regressions', () => {
   });
 
   it('requires real PhysiOmni live telemetry HMAC validation instead of header presence', () => {
-    const source = read('supabase/functions/physiomni-ingress/index.ts');
+    const source = read('supabase/functions/physiomni-ingest/index.ts');
 
-    expect(source).toContain('PHYSIOMNI_INGRESS_HMAC_SECRET');
-    expect(source).toContain("crypto.subtle.sign('HMAC'");
-    expect(source).toContain('x-physiomni-timestamp');
-    expect(source).toContain('5 * 60 * 1000');
-    expect(source).toContain('timingSafeEqual(provided, expected.hex)');
-    expect(source).toContain('normalizeTelemetrySignatureHeader');
-    expect(source).toContain('String.fromCodePoint(byte)');
-    expect(source).toContain('base64PaddingCodePoint');
-    expect(source).toContain('codePointAt(unpaddedLength - 1)');
-    expect(source).toContain('for (const char of encoded)');
-    expect(source).not.toContain('replace(/=+$/g');
-    expect(source).not.toContain(['String.from', 'CharCode'].join(''));
-    expect(source).not.toContain(['char', 'CodeAt'].join(''));
-    expect(source).not.toContain(["char === '+' ? '-'", " : char === '/' ? '_' : char"].join(''));
+    // Verification is WebCrypto HMAC-SHA256 (constant-time verify), never header presence.
+    expect(source).toContain("{ name: 'HMAC', hash: 'SHA-256' }");
+    expect(source).toContain("crypto.subtle.verify('HMAC'");
+    // Fails closed when no signing key is configured.
+    expect(source).toMatch(/if \(!hmacSecret\) \{[\s\S]*?503/);
+    // Replay window on the signed timestamp.
+    expect(source).toContain('Math.abs(Date.now() - telemetryTime) > REPLAY_WINDOW_MS');
+    // Only registered, active devices; rate limit keyed on the verified identity, after that check.
+    const registry = source.indexOf(".from('physiomni_devices')");
+    const limit = source.indexOf('checkRateLimit(`${tenant_id}:${device_id}`');
+    expect(source).toContain(".eq('is_active', true)");
+    expect(registry).toBeGreaterThan(-1);
+    expect(limit).toBeGreaterThan(registry);
     expect(source).not.toContain('Placeholder for HMAC signed telemetry validation');
     expect(source).not.toContain("!isLiveEnabled || req.headers.get('x-physiomni-signature')");
+  });
+
+  it('keeps the retired physiomni-ingress endpoint out of the tree', () => {
+    expect(existsSync('supabase/functions/physiomni-ingress')).toBe(false);
+    expect(existsSync('.github/workflows/deploy-physiomni-ingress.yml')).toBe(false);
+    expect(read('supabase/functions/physiomni-ingest/index.ts')).not.toContain('physiomni-ingress');
   });
 });

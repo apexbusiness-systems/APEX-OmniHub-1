@@ -155,7 +155,7 @@ export async function handleOmnihubTool(
         "mcp-gateway", "mcp-proxy", "omni-runs", "omnibridge-control",
         "omnilink-eval", "omnilink-port", "omnilink-retry-scheduler",
         "ops-voice-health", "physiomni-action", "physiomni-ingest",
-        "physiomni-ingress", "platform-health", "send-push-notification",
+        "platform-health", "send-push-notification",
         "storage-upload-url", "stripe-webhook", "trigger-workflow",
         "verify-nft", "web3-nonce", "web3-verify",
       ];

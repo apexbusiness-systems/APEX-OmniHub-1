@@ -18,7 +18,7 @@
 export interface PostLoginDestinationOptions {
   isAdmin: boolean;
   isPaid: boolean;
-  tier: 'free' | 'starter' | 'pro' | 'enterprise';
+  tier: 'free' | 'starter' | 'pro' | 'business' | 'enterprise';
   intendedDestination?: string | null;
 }
 

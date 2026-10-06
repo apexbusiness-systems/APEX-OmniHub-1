@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { generateSecureId } from '@/lib/security';
 
 /**
- * Audit event payload interface — writes directly to Supabase audit_logs table
+ * Audit event payload interface — written to audit_logs through record_client_audit_event()
  */
 export interface AuditEventPayload {
   id: string;
@@ -62,17 +62,18 @@ function scheduleFlush(delay = 0) {
 }
 
 /**
- * Write audit event directly to Supabase audit_logs table
+ * Record a browser-observed event through the server-side writer. The database
+ * takes the actor from the session and stamps the time, so the actorId and
+ * timestamp on the payload are not sent. It returns false when the per-actor
+ * throttle drops the event; that is final, so the event leaves the queue.
  */
 async function writeToSupabase(entry: AuditEventPayload): Promise<void> {
-  const { error } = await supabase.from('audit_logs').insert({
-    id: entry.id,
-    actor_id: entry.actorId || null,
-    action_type: entry.actionType,
-    resource_type: entry.resourceType || null,
-    resource_id: entry.resourceId || null,
-    metadata: entry.metadata || null,
-    created_at: entry.timestamp,
+  const { error } = await supabase.rpc('record_client_audit_event', {
+    p_id: entry.id,
+    p_action_type: entry.actionType,
+    p_resource_type: entry.resourceType ?? null,
+    p_resource_id: entry.resourceId ?? null,
+    p_metadata: entry.metadata ?? null,
   });
 
   if (error) {

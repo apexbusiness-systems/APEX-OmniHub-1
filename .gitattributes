@@ -1,1 +1,12 @@
+# Global: normalise all text to LF in the index
+* text=auto eol=lf
+
+# Explicit overrides (previously only these were pinned)
 *.sh text eol=lf
+apps/omnihub-site/dashboard/OmniDashShell.tsx text eol=lf
+
+# Files that had CRLF baked into the git index — pin to LF
+.github/workflows/integration.yml text eol=lf
+sonar-project.properties text eol=lf
+src/lib/web3/config.ts text eol=lf
+src/zero-trust/baseline.ts text eol=lf

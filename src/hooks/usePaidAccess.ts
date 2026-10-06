@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
-export type SubscriptionTier = 'free' | 'starter' | 'pro' | 'enterprise';
+export type SubscriptionTier = 'free' | 'starter' | 'pro' | 'business' | 'enterprise';
 export type SubscriptionStatus = 'active' | 'trialing' | 'past_due' | 'canceled' | 'expired' | 'paused';
 
 export interface Subscription {
@@ -171,7 +171,8 @@ export function useTierAccess(requiredTier: SubscriptionTier): boolean {
     free: 0,
     starter: 1,
     pro: 2,
-    enterprise: 3,
+    business: 3,
+    enterprise: 4,
   };
 
   return tierLevels[tier] >= tierLevels[requiredTier];

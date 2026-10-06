@@ -163,3 +163,6 @@ playwright/.auth/
 
 # UI/UX evidence-capture helper (local, do not commit)
 ._shoot.mjs
+
+# Live production validation credentials (JR-supplied, never committed)
+.env.production-validation

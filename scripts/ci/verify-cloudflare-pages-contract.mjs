@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = resolve(new URL('../..', import.meta.url).pathname);
+const ROOT = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const rootWrangler = resolve(ROOT, 'wrangler.toml');
 const pkgPath = resolve(ROOT, 'package.json');
 const distIndex = resolve(ROOT, 'dist/index.html');

@@ -35,7 +35,7 @@ status: verified
 - **Purpose:** Persistent state, Row Level Security (RLS) enforcement, schema definition, and stored procedures.
 - **Primary Directories:**
   - `supabase/migrations/` (Version-controlled SQL)
-- **Primary Entrypoints:** Sequential `.sql` migration files applied via `supabase db push`.
+- **Primary Entrypoints:** Sequential `.sql` migration files applied via `supabase db push` (production: applied by the owner, in order, only what is on `main`).
 - **Expected Quality Gates:** Migration drift checks, RLS Posture Gate in CI, DB schema validation in Armageddon Suite.
 - **Handoff Boundaries:** Serves as the single source of truth for durable state. No direct mutation except via Edge Functions or Orchestrator actions.
 - **Canonical Docs:** `docs/infrastructure/SUPABASE_SETUP.md`

@@ -44,9 +44,11 @@ export async function resolveOmniSkills(client: OmniSkillsClient): Promise<OmniS
     throw new Error('omniskills_query_failed');
   }
 
-  const tier = entitlementResult.data?.tier === 'PRO' ? 'PRO' : 'BASIC';
+  const entTier = entitlementResult.data?.tier;
+  const tier = entTier === 'PRO' || entTier === 'BUS' ? entTier : 'BASIC'; // BUS >= PRO (F-24)
+  const unlimited = tier !== 'BASIC';
   const used = skillsResult.count ?? 0;
-  const limit = tier === 'PRO' ? 'Unlimited' : '5';
+  const limit = unlimited ? 'Unlimited' : '5';
 
   return {
     State: 'Online',
@@ -54,13 +56,13 @@ export async function resolveOmniSkills(client: OmniSkillsClient): Promise<OmniS
       id: 'active-skills',
       label: 'Active Skills',
       status: 'active',
-      detail: tier === 'PRO' ? String(used) : `${used}/5`,
+      detail: unlimited ? String(used) : `${used}/5`,
     }],
     actions: ['forge-skill', 'manage-bundles'],
     count: used,
     stats: [
       { label: 'Plan', value: tier },
-      { label: 'Free Skills Used', value: tier === 'PRO' ? `${used}/${limit}` : `${used}/5` },
+      { label: 'Free Skills Used', value: unlimited ? `${used}/${limit}` : `${used}/5` },
     ],
   };
 }

@@ -4,11 +4,12 @@
  * @module src/core/mcp/mcp.config
  *
  * Zod-validated configuration schema for MCP server connections.
- * API keys sourced from environment variables, never hardcoded.
+ * No credentials are injected here: this module ships in the client bundle,
+ * so stdio MCP servers must receive secrets from their server runtime.
  *
  * APEX STANDARDS ENFORCED:
  * - Zod boundary validation on all config
- * - Environment-aware: keys from import.meta.env
+ * - No secrets in client code (guarded by scripts/ci/check-client-secret-env.mjs)
  * - Fail-closed: invalid config rejected at parse time
  *
  * OWNED BY: APEX Business Systems Ltd.
@@ -90,7 +91,7 @@ export function getDefaultConfig(): MCPConfig {
         name: 'Firecrawl Web Scraper',
         command: 'npx',
         args: ['-y', 'firecrawl-mcp'],
-        env: { FIRECRAWL_API_KEY: getEnvVar('VITE_FIRECRAWL_API_KEY') },
+        env: {},
         transport: 'stdio',
         capabilities: ['tools'],
       },
@@ -98,7 +99,7 @@ export function getDefaultConfig(): MCPConfig {
         name: 'Google Workspace',
         command: 'npx',
         args: ['-y', '@anthropic/google-workspace-mcp'],
-        env: { GOOGLE_API_KEY: getEnvVar('VITE_GOOGLE_API_KEY') },
+        env: {},
         transport: 'stdio',
         capabilities: ['tools', 'resources'],
       },
@@ -106,7 +107,7 @@ export function getDefaultConfig(): MCPConfig {
         name: 'GitHub',
         command: 'npx',
         args: ['-y', '@anthropic/github-mcp'],
-        env: { GITHUB_TOKEN: getEnvVar('VITE_GITHUB_TOKEN') },
+        env: {},
         transport: 'stdio',
         capabilities: ['tools', 'resources'],
       },
@@ -114,10 +115,7 @@ export function getDefaultConfig(): MCPConfig {
         name: 'Supabase',
         command: 'npx',
         args: ['-y', '@supabase/mcp-server'],
-        env: {
-          SUPABASE_URL: getEnvVar('VITE_SUPABASE_URL'),
-          SUPABASE_SERVICE_KEY: getEnvVar('VITE_SUPABASE_SERVICE_KEY'),
-        },
+        env: { SUPABASE_URL: getEnvVar('VITE_SUPABASE_URL') },
         transport: 'stdio',
         capabilities: ['tools', 'resources'],
       },

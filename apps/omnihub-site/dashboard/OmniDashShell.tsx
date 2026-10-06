@@ -376,6 +376,7 @@ const OmniDashSidebar = ({ activeNav, setActiveNav, kpi, systemHealth, demoMode:
         <div style={{ fontSize:10.8, color:T.t3 }}>{tx('dashboard.sidebar.companyName')}</div>
         <button
           type="button"
+          data-testid="omnidash-sign-out"
           onClick={handleSignOut}
           disabled={signingOut}
           style={{
@@ -2111,6 +2112,7 @@ export default function OmniDashShell() {
               </button>
               <button
                 type="button"
+                data-testid="omnidash-mobile-sign-out"
                 onClick={() => { void supabase.auth.signOut().then(() => { globalThis.location.href = '/login'; }); }}
                 style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 8, border: `1px solid ${T.border}`, background: 'transparent', color: T.t1, fontSize: 13, cursor: 'pointer' }}
               >

@@ -6,6 +6,8 @@ status: verified
 
 # feat(native): Implement Capacitor wrapper with native-only push notifications
 
+> **Current-state note (2026-09-29):** these `npm run` names in this document are not defined in any `package.json` in the repository and should be treated as planned or historical, not runnable: `cap:build:ios`, `cap:ios`, `cap:build:android`, `cap:android`. The runnable scripts are in the root `package.json`.
+
 ## Summary
 Implements complete native wrapper using Capacitor for iOS and Android, with **zero Firebase dependency** push notification system using native APNS HTTP/2 and FCM HTTP v1 APIs.
 

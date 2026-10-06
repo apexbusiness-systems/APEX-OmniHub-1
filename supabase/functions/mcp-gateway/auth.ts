@@ -1,5 +1,5 @@
 /** Pure, runtime-portable authorization helper for the privileged MCP gateway. */
-function timingSafeEqual(left: string, right: string): boolean {
+export function timingSafeEqual(left: string, right: string): boolean {
   const encoder = new TextEncoder();
   const leftBytes = encoder.encode(left);
   const rightBytes = encoder.encode(right);
@@ -13,16 +13,16 @@ function timingSafeEqual(left: string, right: string): boolean {
   return difference === 0;
 }
 
+/** The credential presented on the request (Bearer token or x-api-key), or null. Never read from the URL. */
+export function presentedKey(req: Request): string | null {
+  const authorization = req.headers.get('Authorization');
+  if (authorization?.startsWith('Bearer ')) return authorization.slice(7);
+  return req.headers.get('x-api-key');
+}
+
 export function isMcpGatewayAuthorized(req: Request, configuredApiKey: string | undefined): boolean {
   const apiKey = configuredApiKey?.trim();
   if (!apiKey) return false;
-
-  const authorization = req.headers.get('Authorization');
-  if (authorization?.startsWith('Bearer ')) {
-    return timingSafeEqual(authorization.slice(7), apiKey);
-  }
-
-  const headerKey = req.headers.get('x-api-key');
-  return headerKey !== null && timingSafeEqual(headerKey, apiKey);
+  const presented = presentedKey(req);
+  return presented !== null && timingSafeEqual(presented, apiKey);
 }
-
